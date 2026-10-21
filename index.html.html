@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Кошачья поляна</title>
+<style>
+:root {
+  --site-primary: #315f53;
+  --site-on-primary: #ffffff;
+  --site-secondary: #d9e7d9;
+  --site-on-secondary: #203d35;
+  --site-background: #f4f2e9;
+  --site-on-background: #24312c;
+  --site-font-body: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --site-font-heading: Georgia, "Times New Roman", serif;
+  --site-heading-scale: 1;
+  --site-spacing-scale: 1;
+  --site-radius-scale: 1;
+  --site-decoration-opacity: 1;
+}
+* { box-sizing: border-box; }
+body { margin: 0; color: var(--site-on-background); font-family: var(--site-font-body); background: var(--site-background); }
+#app { min-height: 100vh; width: 100%; border-radius: 0; background-color: light-dark(var(--site-background), #1b2420); color: light-dark(var(--site-on-background), #e8eee9); padding: calc(24px * var(--site-spacing-scale)); }
+.top { max-width: 1080px; margin: 0 auto; }
+header { display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:22px; }
+.brand { display:flex; align-items:center; gap:13px; }
+.logo { display:grid; place-items:center; width:48px; height:48px; border-radius:16px; background:var(--site-primary); color:var(--site-on-primary); font-size:25px; }
+h1,h2,h3 { font-family:var(--site-font-heading); }
+h1 { font-size:calc(32px * var(--site-heading-scale)); line-height:1.05; margin:0; }
+.subtitle { margin:5px 0 0; opacity:.7; font-size:14px; }
+.actions { display:flex; gap:8px; flex-wrap:wrap; }
+button,select { font:inherit; }
+button { cursor:pointer; border:1px solid color-mix(in srgb, var(--site-primary) 25%, transparent); border-radius:calc(12px * var(--site-radius-scale)); padding:10px 14px; background:light-dark(#fff, #26332d); color:inherit; transition:transform .12s, background .12s; }
+button:hover { transform:translateY(-1px); }
+button.primary { background:var(--site-primary); color:var(--site-on-primary); border-color:transparent; }
+button.selected { background:var(--site-secondary); color:var(--site-on-secondary); border-color:var(--site-primary); }
+.layout { display:grid; grid-template-columns:minmax(0, 1.55fr) minmax(260px, .8fr); gap:18px; align-items:start; }
+.panel { border:1px solid color-mix(in srgb, var(--site-on-background) 13%, transparent); border-radius:calc(20px * var(--site-radius-scale)); background:light-dark(#fffdf7, #222d27); padding:calc(18px * var(--site-spacing-scale)); box-shadow:0 8px 28px #1b30200c; }
+.board-head { display:flex; justify-content:space-between; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom:14px; }
+.board-head h2 { margin:0; font-size:22px; }
+.stats { display:flex; gap:8px; }
+.stat { background:var(--site-secondary); color:var(--site-on-secondary); border-radius:12px; padding:8px 11px; font-size:13px; }
+.stat strong { display:block; font-size:18px; }
+.grid { display:grid; grid-template-columns:repeat(8, minmax(0, 1fr)); gap:5px; max-width:600px; margin:0 auto; user-select:none; }
+.cell { aspect-ratio:1; padding:0; min-width:0; border-radius:8px; background:linear-gradient(145deg, #e4e9dc, #c9d7c6); color:#24463a; font-weight:800; font-size:clamp(12px, 2.5vw, 20px); border:1px solid #aebfae; box-shadow:inset 0 -3px #a8b8a6; touch-action:manipulation; }
+.cell.revealed { background:light-dark(#f5f2e8, #39463e); box-shadow:none; border-color:color-mix(in srgb, var(--site-on-background) 10%, transparent); cursor:default; }
+.cell.marked { background:#e8c8a0; border-color:#c18b50; }
+.cell.boom { background:#c76c5b; color:white; }
+.cell:focus-visible, button:focus-visible, select:focus-visible { outline:3px solid #d99c54; outline-offset:2px; }
+.n1{color:#3774b5}.n2{color:#33865b}.n3{color:#c14c3f}.n4{color:#7753a8}.n5,.n6,.n7,.n8{color:#8a552a}
+.status { margin:14px 0 0; padding:12px 14px; border-radius:12px; background:light-dark(#f1f4eb, #2c3a31); font-size:14px; min-height:44px; }
+.side h2 { font-size:23px; margin:0 0 14px; }
+.field { margin-bottom:15px; }
+.field label { display:flex; justify-content:space-between; gap:10px; font-size:14px; font-weight:650; margin-bottom:7px; }
+select { width:100%; padding:10px 12px; border:1px solid color-mix(in srgb, var(--site-on-background) 20%, transparent); border-radius:10px; background:light-dark(#fff, #26332d); color:inherit; }
+.mode-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:12px 0; }
+.mode-row button { padding:11px 8px; }
+.legend { display:grid; grid-template-columns:1fr 1fr; gap:9px; margin-top:12px; }
+.legend-item { display:flex; align-items:center; gap:8px; font-size:12px; opacity:.85; }
+.legend-icon { display:grid; place-items:center; width:27px; height:27px; border-radius:7px; background:var(--site-secondary); color:var(--site-on-secondary); font-weight:800; }
+.help { margin-top:18px; }
+.help h3 { margin:0 0 7px; font-size:18px; }
+.help p { font-size:13px; line-height:1.55; margin:0; opacity:.8; }
+footer { text-align:center; opacity:.6; font-size:12px; padding:20px 0 4px; }
+@media(max-width:760px){ #app{padding:14px;} .layout{grid-template-columns:1fr;} h1{font-size:27px;} .panel{padding:14px;} .grid{gap:4px;} .cell{border-radius:6px;} header{align-items:flex-start;} }
+</style>
+<style>
+#app{padding:0!important;background:#21150f!important;color:#f2e7d8!important;font-family:Arial,sans-serif}
+#app .top{display:none}
+.catworld{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr) 360px;background:#120b08;gap:8px;padding:4px}
+.meadow{position:relative;min-height:calc(100vh - 8px);overflow:hidden;border:0;background-color:#28140d;background-image:linear-gradient(180deg,#180b08a8 0%,#2c130b55 38%,#160a0877 100%),radial-gradient(ellipse at 12% 15%,#71452c 0%,transparent 31%),radial-gradient(ellipse at 76% 28%,#4b2414 0%,transparent 34%),radial-gradient(ellipse at 53% 74%,#61351c 0%,transparent 38%),radial-gradient(ellipse at 95% 92%,#795023 0%,transparent 24%),linear-gradient(135deg,#32170e,#1c0d09 48%,#42200f);background-size:cover;background-position:center;display:flex;align-items:flex-start;justify-content:flex-start}
+.meadow:before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 35% 48%,#0b050455,transparent 40%),radial-gradient(ellipse at 88% 62%,#0b050444,transparent 28%);pointer-events:none}
+.cat-token{position:absolute;z-index:1;left:16px;top:16px;width:118px;max-width:30%;image-rendering:auto;filter:drop-shadow(0 4px 3px #0008);cursor:pointer;transition:left .2s,top .2s}
+.cat-token:hover{transform:translateY(-4px)}
+.cat-label{position:absolute;bottom:14px;left:14px;color:#c8b6a3;font-size:12px;opacity:.8}
+.chatbox{height:calc(100vh - 16px);min-height:420px;display:flex;flex-direction:column;background:#211f1d;border:1px solid #50443a;border-radius:8px;overflow:hidden}
+.chat-title{padding:14px 15px;background:#302b28;border-bottom:1px solid #51463e;font-weight:700;letter-spacing:.3px}
+.messages{flex:1;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:9px}
+.message{font-size:13px;line-height:1.45;overflow-wrap:anywhere;color:#e0d5c9}
+.message .time{color:#a58f7b;font-size:10px;margin-right:6px}
+.message .sender{font-weight:700;color:#e4b98a}
+.composer{padding:10px;border-top:1px solid #51463e;display:flex;gap:7px;background:#2c2825}
+.composer input{min-width:0;flex:1;background:#171615;border:1px solid #615145;border-radius:5px;padding:11px;color:#f5e9dc;font:inherit;outline:none}
+.composer input:focus{border-color:#c18b50}
+.composer button{background:#8b5c36;color:#fff;border:0;border-radius:5px;padding:0 15px}
+.chat-note{font-size:10px;color:#a99582;padding:0 12px 9px;background:#2c2825}
+.site-tabs{display:flex;gap:0;background:#1b120e;border-bottom:1px solid #59402f;padding:0 12px}
+.site-tabs button{flex:1;border:0;border-radius:0;background:transparent;color:#cdb9a5;padding:15px 10px;font-weight:700;border-bottom:3px solid transparent}
+.site-tabs button.active{color:#fff0df;border-bottom-color:#d49b63;background:#39271c}
+.fitonyashki-view{min-height:calc(100vh - 52px);background:#191411;color:#e9e0d8;display:flex;flex-direction:column}
+.fitonyashki-view .intro{padding:14px 18px;color:#c2b2a4;font-size:13px;border-bottom:1px solid #382e27}
+.pair-list{padding:16px;display:flex;flex-direction:column;gap:10px;max-width:850px;width:100%;margin:0 auto}
+.pair-message{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:#28221e;border:1px solid #493a30;border-radius:13px;padding:13px 15px;color:#eee4dc;transition:background .15s,border-color .15s,transform .15s}
+.pair-message:hover{background:#332820;transform:translateY(-1px)}
+.pair-message .avatar{width:36px;height:36px;flex:0 0 36px;border-radius:50%;display:grid;place-items:center;background:#4b382b;color:#eac59e;font-weight:800}
+.pair-message .pair-name{font-weight:700;display:block;margin-bottom:3px}
+.pair-message .pair-id{font-size:12px;color:#b9a99b}
+.pair-message .pick-tag{margin-left:auto;font-size:11px;color:#d8b68f;white-space:nowrap}
+.pair-message.big{border-color:#d7a36f;background:#3b2b20}.pair-message.small{border-color:#83b9d2;background:#20333a}
+.pair-status{min-height:48px;margin:0 16px 12px;padding:12px 15px;border-radius:10px;background:#28221e;color:#d9c9ba;font-weight:650}
+.pair-status.good{color:#8fe0a3;background:#173322}.pair-status.bad{animation:red-flash .65s ease,wrong-shake .55s ease}
+@keyframes wrong-shake{0%,100%{transform:translateX(0)}15%,45%,75%{transform:translateX(-5px)}30%,60%,90%{transform:translateX(5px)}}
+@keyframes red-flash{0%,100%{box-shadow:inset 0 0 0 0 #e33}25%,65%{box-shadow:inset 0 0 0 999px #b51f1f66}}
+.fitonyashki-view[hidden],.catworld[hidden]{display:none!important}
+@media(max-width:700px){.catworld{grid-template-columns:1fr;grid-template-rows:minmax(300px,55vh) minmax(320px,45vh)}.meadow{min-height:0}.chatbox{height:100%;min-height:0}.cat-token{width:130px}}
+</style>
+</head>
+<body>
+<div id="app"><section class="catworld"><main class="meadow" aria-label="Игровое поле"><img class="cat-token" id="cat" src="data:image/webp;base64,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" alt="Кот" title="Нажми на кота"><div class="cat-label">Кошачья поляна · 1 кот</div></main><aside class="chatbox"><div class="chat-title">Чат поляны</div><div class="messages" id="messages" aria-live="polite"><div class="message"><span class="time">16:00</span><span class="sender">Система:</span> Добро пожаловать на поляну!</div></div><form class="composer" id="chatForm"><input id="chatInput" maxlength="300" autocomplete="off" placeholder="Написать сообщение..." aria-label="Сообщение"><button type="submit">OK</button></form><div class="chat-note">Enter — отправить · сообщения видны в этом браузере</div></aside></section><div class="top">
+<header><div class="brand"><div class="logo">🐾</div><div><h1>Тренажёр лазания</h1><p class="subtitle">[КПВ] · тренировочное поле</p></div></div><div class="actions"><button id="helpBtn">Инструкция</button><button id="themeBtn">◐ Тема</button><button class="primary" id="newBtn">↻ Новая игра</button></div></header>
+<div class="layout"><main class="panel"><div class="board-head"><h2>Маршрут</h2><div class="stats"><div class="stat"><strong id="dangerCount">12</strong>опасных</div><div class="stat"><strong id="timer">0:00</strong>время</div></div></div><div id="grid" class="grid" aria-label="Игровое поле"></div><div class="status" id="status" role="status">Начните с клетки с рамкой — она безопасна. Избегайте опасных клеток!</div><div class="mode-row"><button class="selected" id="jumpMode">🐾 Прыжок</button><button id="markMode">💣 Опасная</button></div><div class="legend"><div class="legend-item"><span class="legend-icon">1–8</span> число опасных рядом</div><div class="legend-item"><span class="legend-icon">💣</span> ваша отметка</div><div class="legend-item"><span class="legend-icon">!</span> подсказка</div><div class="legend-item"><span class="legend-icon">◇</span> стартовая клетка</div></div></main>
+<aside class="panel side"><h2>Параметры</h2><div class="field"><label for="height">Высота подъёма</label><select id="height"><option value="1">1 — низкая</option><option value="2">2</option><option value="3" selected>3 — средняя</option><option value="4">4</option><option value="5">5 — высокая</option></select></div><div class="field"><label for="lu">Уровень лазания (ЛУ) <span id="luValue">5</span></label><select id="lu"><option value="0">ЛУ 0</option><option value="1">ЛУ 1</option><option value="2">ЛУ 2</option><option value="3">ЛУ 3</option><option value="4">ЛУ 4</option><option value="5" selected>ЛУ 5</option><option value="6">ЛУ 6</option><option value="7">ЛУ 7</option><option value="8">ЛУ 8</option><option value="9">ЛУ 9</option></select></div><div class="field"><label for="season">Сезон</label><select id="season"><option>Зелёные листья</option><option>Юные листья</option><option>Листопад</option><option>Голые деревья</option></select></div><div class="field"><label for="age">Возраст / рост</label><select id="age"><option>Взрослый</option><option>Подросток</option><option>Котёнок</option></select></div><button class="primary" id="applyBtn" style="width:100%">Применить настройки</button><div class="help" id="help"><h3>Как играть</h3><p>Открывайте соседние клетки, ориентируясь на числа: число показывает, сколько опасных клеток находится среди восьми соседей. Кликните правой кнопкой мыши или выберите «Опасная», чтобы поставить отметку. Отметьте все опасные клетки или откройте все безопасные — и маршрут будет пройден.</p></div><div class="help"><h3>Подсказка</h3><p id="hintText">При ЛУ 5 шанс подсказки составляет 20%. Нажмите на открытую клетку, чтобы попробовать получить подсказку на соседней клетке.</p><button id="hintBtn" style="width:100%;margin-top:10px">Проверить подсказку</button></div></aside></div><footer>Учебный прототип · не подключён к CatWar и не сохраняет игровые данные</footer>
+</div></div>
+<script>
+(() => {
+ const W=8, H=8; let cells=[], mode='jump', ended=false, started=false, seconds=0, timerId=null, dark=false;
+ const $=id=>document.getElementById(id);
+ const neighbors=(i)=>{const x=i%W,y=Math.floor(i/W),out=[];for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){if(!dx&&!dy)continue;const nx=x+dx,ny=y+dy;if(nx>=0&&nx<W&&ny>=0&&ny<H)out.push(ny*W+nx);}return out;};
+ function dangerTotal(){return Math.min(24, 7+Number($('height').value)*2);}
+ function newGame(){clearInterval(timerId);seconds=0;started=false;ended=false;$('timer').textContent='0:00';const total=dangerTotal();cells=Array.from({length:W*H},(_,i)=>({danger:false,open:false,mark:false,n:0,start:i===0||i===W-1}));let pool=cells.map((_,i)=>i).filter(i=>!cells[i].start);for(let k=0;k<total;k++){const r=Math.floor(Math.random()*pool.length),idx=pool.splice(r,1)[0];cells[idx].danger=true;}cells.forEach((c,i)=>c.n=neighbors(i).filter(j=>cells[j].danger).length);$('dangerCount').textContent=total;$('status').textContent='Начните с клетки с рамкой — она безопасна. Избегайте опасных клеток!';render();}
+ function startTimer(){if(started)return;started=true;timerId=setInterval(()=>{seconds++;$('timer').textContent=Math.floor(seconds/60)+':'+String(seconds%60).padStart(2,'0');},1000);}
+ function render(){const grid=$('grid');grid.innerHTML='';cells.forEach((c,i)=>{const b=document.createElement('button');b.className='cell';b.setAttribute('aria-label',`Клетка ${Math.floor(i/W)+1}, ${i%W+1}`);if(c.start&&!c.open)b.style.border='2px solid #4b8c70';if(c.mark){b.classList.add('marked');b.textContent='💣';}else if(c.open){b.classList.add('revealed');if(c.danger){b.classList.add('boom');b.textContent='✕';}else if(c.n){b.textContent=c.n;b.classList.add('n'+c.n);}else{b.textContent='·';}}else{b.textContent='';}if(ended&&c.danger&&!c.mark){b.classList.add('boom');b.textContent='💣';}b.addEventListener('click',()=>act(i));b.addEventListener('contextmenu',e=>{e.preventDefault();toggleMark(i);});grid.appendChild(b);});}
+ function act(i){if(ended)return;if(mode==='mark'){toggleMark(i);return;}if(cells[i].open){$('status').textContent='Клетка уже проверена. Попробуйте соседнюю клетку.';return;}if(!cells[i].start&&!neighbors(i).some(j=>cells[j].open)){ $('status').textContent='Прыгать можно только на клетку рядом с уже открытой.';return;}startTimer();cells[i].open=true;if(cells[i].danger){ended=true;clearInterval(timerId);$('status').textContent='Маршрут сорван! Нажмите «Новая игра», чтобы попробовать ещё раз.';render();return;}if(cells[i].n===0)neighbors(i).forEach(j=>{if(!cells[j].danger)cells[j].open=true;});checkWin();render();if(!ended)$('status').textContent='Удачный прыжок! Число показывает опасные клетки вокруг.';}
+ function toggleMark(i){if(ended||cells[i].open)return;cells[i].mark=!cells[i].mark;startTimer();checkWin();render();if(!ended)$('status').textContent=cells[i].mark?'Опасная клетка отмечена. Повторное нажатие снимет отметку.':'Отметка снята.';}
+ function checkWin(){const dangers=cells.filter(c=>c.danger),safe=cells.filter(c=>!c.danger);if(dangers.every(c=>c.mark)||safe.every(c=>c.open)){ended=true;clearInterval(timerId);$('status').textContent='Маршрут пройден! Отличная работа — можно начать новую игру.';}}
+ function setMode(m){mode=m;$('jumpMode').classList.toggle('selected',m==='jump');$('markMode').classList.toggle('selected',m==='mark');}
+ $('newBtn').onclick=newGame;$('applyBtn').onclick=()=>{ $('luValue').textContent=$('lu').value;$('hintText').textContent=`При ЛУ ${$('lu').value} шанс подсказки составляет ${Number($('lu').value)<4?0:Number($('lu').value)===4?10:Number($('lu').value)===5?20:30}%. Настройки применены к следующей игре.`;newGame();};$('jumpMode').onclick=()=>setMode('jump');$('markMode').onclick=()=>setMode('mark');$('lu').onchange=()=>{$('luValue').textContent=$('lu').value;};$('hintBtn').onclick=()=>{const lu=Number($('lu').value),chance=lu<4?0:lu===4?10:lu===5?20:30;const candidates=[];cells.forEach((c,i)=>{if(c.open&&!c.danger)neighbors(i).forEach(j=>{if(!cells[j].open&&!cells[j].mark)candidates.push(j);});});if(!candidates.length){$('status').textContent='Сначала откройте безопасную клетку, чтобы появилась возможность подсказки.';return;}if(Math.random()*100<chance){const i=candidates[Math.floor(Math.random()*candidates.length)];const buttons=$('grid').children;buttons[i].textContent='!';buttons[i].style.outline='3px solid #d99c54';$('status').textContent='Подсказка появилась на одной из соседних клеток! Это не гарантия безопасности.';}else{$('status').textContent=`Подсказка не появилась. При ЛУ ${lu} шанс составляет ${chance}%.`;}};$('themeBtn').onclick=()=>{dark=!dark;document.documentElement.style.colorScheme=dark?'dark':'light';$('themeBtn').textContent=dark?'☀ Светлая':'◐ Тема';};$('helpBtn').onclick=()=>{$('help').scrollIntoView({behavior:'smooth',block:'center'});$('help').style.outline='2px solid #d99c54';setTimeout(()=>$('help').style.outline='',1300);};document.addEventListener('keydown',e=>{if(e.key==='Escape')setMode('jump');});newGame();
+})();
+</script>
+<script>
+(() => {
+ const form=document.getElementById('chatForm');
+ const input=document.getElementById('chatInput');
+ const messages=document.getElementById('messages');
+ const cat=document.getElementById('cat');
+ const clock=()=>new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
+ function addMessage(sender,text){
+  const row=document.createElement('div');row.className='message';
+  const time=document.createElement('span');time.className='time';time.textContent='['+clock()+'] ';
+  const name=document.createElement('span');name.className='sender';name.textContent=sender+': ';
+  const body=document.createElement('span');body.textContent=text;
+  row.append(time,name,body);messages.appendChild(row);messages.scrollTop=messages.scrollHeight;
+ }
+ form.addEventListener('submit',event=>{
+  if(document.querySelector('[data-view="game"].active'))return;
+  event.preventDefault();const text=input.value.trim();if(!text)return;
+  addMessage('Ты',text);input.value='';input.focus();
+ });
+ cat.addEventListener('click',()=>addMessage('Система','Котик приветственно мяукнул 🐾'));
+})();
+</script>
+<script>
+(() => {
+ const app=document.getElementById('app');
+ const game=app.querySelector('.catworld');
+ if(!game)return;
+ const tabs=document.createElement('nav');tabs.className='site-tabs';tabs.innerHTML='<button type="button" class="active" data-view="fit">Фитоняшки</button><button type="button" data-view="game">Игровая</button>';
+ const fit=document.createElement('section');fit.className='fitonyashki-view';fit.innerHTML='<div class="intro">Выбери пары: сначала нажми на сообщение, которое будет <b>Большой грушей</b>, затем на сообщение для <b>Маленькой груши</b>. Нужно составить 3 правильные пары.</div><div class="pair-list" id="pairList"></div><div class="pair-status" id="pairStatus" role="status" aria-live="polite">Выбери первое сообщение — Большую грушу.</div>';
+ app.insertBefore(tabs,app.firstChild);app.insertBefore(fit,game);game.hidden=true;
+ const people=[['пузырёчек','1712876','280/500'],['Отшельник','1126512','2508'],['Цветок Фиалки','1703440','3415/7к'],['Северушка#1712377','1712377','30/300'],['состязаньице','1713290','1к/7к'],['Шепот Звезд','1590985','9']];
+ const correct=new Set(['0-2','1-3','4-5']);let first=null,solved=new Set(),locked=false;
+ const list=fit.querySelector('#pairList'),status=fit.querySelector('#pairStatus');
+ function render(){list.innerHTML='';people.forEach((p,i)=>{const b=document.createElement('button');b.type='button';b.className='pair-message';if(first===i)b.classList.add('big');else if(first!==null&&solved.has([Math.min(first,i),Math.max(first,i)].join('-')))b.classList.add('matched');b.innerHTML='<span class="avatar">'+p[0].trim().charAt(0).toUpperCase()+'</span><span><span class="pair-name"></span><span class="pair-id"></span></span><span class="pick-tag"></span>';b.querySelector('.pair-name').textContent=p[0];b.querySelector('.pair-id').textContent=p[1]+' · '+p[2];b.querySelector('.pick-tag').textContent=first===i?'Большая груша':'';b.addEventListener('click',()=>choose(i));list.appendChild(b);});}
+ function choose(i){if(locked||solved.size===3)return;if(first===null){first=i;status.className='pair-status';status.textContent='Выбрана Большая груша: '+people[i][0]+'. Теперь выбери Маленькую грушу.';render();return;}if(first===i){first=null;status.textContent='Выбор отменён. Выбери Большую грушу.';render();return;}const key=[Math.min(first,i),Math.max(first,i)].join('-');if(correct.has(key)){solved.add(key);first=null;if(solved.size===3){status.className='pair-status good';status.textContent='молодец, идем дальше';}else{status.className='pair-status good';status.textContent='Правильная пара! Осталось составить '+(3-solved.size)+' пары.';}}else{first=null;locked=true;status.className='pair-status bad';status.textContent='Пара неправильная. Попробуй ещё раз!';setTimeout(()=>{status.className='pair-status';status.textContent='Попробуй составить пары ещё раз.';locked=false;render();},650);}render();}
+ tabs.addEventListener('click',e=>{const btn=e.target.closest('button[data-view]');if(!btn)return;tabs.querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===btn));const showGame=btn.dataset.view==='game';fit.hidden=showGame;game.hidden=!showGame;});
+ render();
+})();
+</script>
+<script>
+(() => {
+ const game=document.querySelector('.catworld');
+ const messages=document.getElementById('messages');
+ const form=document.getElementById('chatForm');
+ const input=document.getElementById('chatInput');
+ const composer=form;
+ const chatTitle=document.querySelector('.chat-title');
+ if(!game||!messages||!form||!input)return;
+ const tasks=[
+  ['Уга','9','Шепот Звезд|состязаньице'],
+  ['Муся','76/2000','Цветок Фиалки|пузырёчек'],
+  ['Неясни','678/7к','Цветок Фиалки|пузырёчек'],
+  ['Зонтик','382/500','Отшельник|Северушка'],
+  ['Точка','876/7000','Цветок Фиалки|пузырёчек'],
+  ['Рей','9','Шепот Звезд|состязаньице'],
+  ['Фиалка','5/15','Отшельник|Северушка'],
+  ['Ворон','6/150','Отшельник|Северушка'],
+  ['Дарк','4585/7к','Шепот Звезд|состязаньице'],
+  ['Пестри','452/500','Отшельник|Северушка'],
+  ['Ори','2445/7000','Шепот Звезд|состязаньице'],
+  ['Тенюш','1997/2к','Цветок Фиалки|пузырёчек']
+ ];
+ let current=null;const completed=new Set();let started=false;
+ const banner=document.createElement('div');banner.className='game-win';banner.textContent='ты умница! так держать';banner.hidden=true;game.appendChild(banner);
+ const oldNote=document.querySelector('.chat-note');
+ if(oldNote)oldNote.textContent='Нажми на имя в сообщении, затем напиши ответ с названиями обеих ДГ.';
+ chatTitle.textContent='Игровая · распределение БУ';
+ const style=document.createElement('style');style.textContent='.game-win{position:fixed;z-index:10;inset:0;display:grid;place-items:center;background:#0005;color:#8ff0a6;font-size:clamp(28px,5vw,56px);font-weight:800;text-align:center;text-shadow:0 3px 18px #000;border:0;pointer-events:none}.game-win[hidden]{display:none}.game-target{cursor:pointer;border:1px solid #604c3b;border-radius:8px;background:#332820;padding:9px 11px;color:#f1e4d7}.game-target:hover{background:#493526}.game-target.chosen{outline:2px solid #d49b63}.game-target.done{opacity:.5}.catworld.game-error{animation:game-shake .55s ease,game-red .7s ease}@keyframes game-shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-5px)}40%,80%{transform:translateX(5px)}}@keyframes game-red{0%,100%{box-shadow:inset 0 0 0 0 transparent}25%,65%{box-shadow:inset 0 0 0 999px #c51d1d66}}';document.head.appendChild(style);
+ function addSystem(text){const row=document.createElement('div');row.className='message';const time=document.createElement('span');time.className='time';time.textContent='['+new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})+'] ';const name=document.createElement('span');name.className='sender';name.textContent='Система: ';const body=document.createElement('span');body.textContent=text;row.append(time,name,body);messages.appendChild(row);messages.scrollTop=messages.scrollHeight;}
+ function showTask(t){const row=document.createElement('button');row.type='button';row.className='message game-target';row.textContent=t[0]+' - '+t[1];row.dataset.person=t[0];row.addEventListener('click',()=>{if(completed.has(t[0]))return;current=t;messages.querySelectorAll('.game-target').forEach(x=>x.classList.toggle('chosen',x===row));input.value=t[0]+' — ';input.focus();addSystem('Выбрано имя: '+t[0]+'. Напиши обе ДГ в ответе.');});messages.appendChild(row);messages.scrollTop=messages.scrollHeight;}
+ function startSequence(){if(started)return;started=true;messages.innerHTML='';addSystem('Распредели всех БУ по ранее составленным ДГ.');let i=0;showTask(tasks[i++]);const timer=setInterval(()=>{if(i>=tasks.length){clearInterval(timer);return;}showTask(tasks[i++]);},5000);}
+ form.addEventListener('submit',event=>{const text=input.value.trim();if(!current||!text)return;const lower=text.toLocaleLowerCase('ru-RU');const names=current[2].split('|');if(!names.every(n=>lower.includes(n.toLocaleLowerCase('ru-RU')))){event.preventDefault();event.stopImmediatePropagation();game.classList.remove('game-error');void game.offsetWidth;game.classList.add('game-error');setTimeout(()=>game.classList.remove('game-error'),750);addSystem('Не совсем верно — попробуй ещё раз.');return;}event.preventDefault();event.stopImmediatePropagation();const row=document.createElement('div');row.className='message';row.innerHTML='';const time=document.createElement('span');time.className='time';time.textContent='['+new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})+'] ';const sender=document.createElement('span');sender.className='sender';sender.textContent='Ты: ';const body=document.createElement('span');body.textContent=text;row.append(time,sender,body);messages.appendChild(row);messages.scrollTop=messages.scrollHeight;completed.add(current[0]);messages.querySelectorAll('.game-target').forEach(x=>{if(x.dataset.person===current[0]){x.classList.remove('chosen');x.classList.add('done');x.disabled=true;}});current=null;input.value='';if(completed.size===tasks.length)banner.hidden=false;else addSystem('Верно! Можно выбрать следующее имя.');});
+ const observer=new MutationObserver(()=>{if(!game.hidden)startSequence();});
+ observer.observe(game,{attributes:true,attributeFilter:['hidden']});
+ const gameTab=document.querySelector('[data-view="game"]');if(gameTab)gameTab.addEventListener('click',()=>setTimeout(startSequence,0));
+})();
+</script>
+</body></html>
