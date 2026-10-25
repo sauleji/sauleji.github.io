@@ -4,59 +4,28 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Пещерка для тренировок</title>
-  <!-- Подключение Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    /* Цветовая палитра из игры */
-    .bg-cw-header { background-color: #e5cdb8; }
-    .bg-cw-sidebar { background-color: #ba9d88; }
-    .bg-cw-chat-bg { background-color: #bda28d; }
-    .bg-cw-input { background-color: #e3d2c3; }
-    .bg-cw-btn { background-color: #d28842; }
-    .bg-cw-btn:hover { background-color: #b87332; }
-    .border-cw { border-color: #8c715d; }
-
-    /* Игровая сетка локации и фоновый арт пещеры */
-    .game-grid {
-      background-color: #170903;
-      background-image: 
-        linear-gradient(to right, rgba(0, 0, 0, 0.8) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(0, 0, 0, 0.8) 1px, transparent 1px),
-        radial-gradient(ellipse at 50% 60%, rgba(135, 75, 25, 0.6) 0%, rgba(60, 25, 8, 0.85) 50%, rgba(12, 5, 2, 0.98) 90%),
-        radial-gradient(ellipse at 80% 30%, rgba(160, 90, 30, 0.3) 0%, transparent 60%);
-      background-size: 75px 75px, 75px 75px, 100% 100%, 100% 100%;
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
     }
 
-    /* Скалы/камни на заднем фоне пещеры */
-    .cave-rocks {
-      position: absolute;
-      inset: 0;
-      background: 
-        radial-gradient(circle at 15% 45%, rgba(0, 0, 0, 0.92) 0%, rgba(0, 0, 0, 0.6) 18%, transparent 40%),
-        radial-gradient(circle at 85% 75%, rgba(120, 60, 15, 0.35) 0%, transparent 35%),
-        radial-gradient(circle at 10% 85%, rgba(0, 0, 0, 0.95) 0%, transparent 30%);
-      pointer-events: none;
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+      background-color: #d1bba7;
     }
 
-    /* Красный эффект при ошибке */
-    .red-overlay {
-      position: fixed;
-      inset: 0;
-      background-color: rgba(239, 68, 68, 0.4);
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.15s ease-in-out;
-      z-index: 50;
-    }
-    .red-overlay.active {
-      opacity: 1;
+    /* Эффект ошибки */
+    body.error-shake {
+      animation: shake 0.35s ease-in-out;
     }
 
-    /* Анимация тряски экрана */
-    .shake {
-      animation: shake-anim 0.35s ease-in-out;
-    }
-    @keyframes shake-anim {
+    @keyframes shake {
       0%, 100% { transform: translate(0, 0); }
       20% { transform: translate(-8px, 0); }
       40% { transform: translate(8px, 0); }
@@ -64,260 +33,139 @@
       80% { transform: translate(5px, 0); }
     }
 
-    /* Плашки переходов локаций */
-    .location-tag {
-      background: rgba(220, 212, 204, 0.9);
-      border: 1px solid #5a483a;
-      border-radius: 8px;
-      font-size: 11px;
-      padding: 4px 10px;
-      box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.6);
-      line-height: 1.15;
+    #error-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(220, 38, 38, 0.4);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.15s ease;
+      z-index: 999;
+    }
+
+    #error-overlay.active {
+      opacity: 1;
+    }
+
+    /* Успех */
+    #success-modal {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.9);
+      border: 3px solid #2ecc71;
+      color: #2ecc71;
+      padding: 22px 42px;
+      font-size: 28px;
+      font-weight: bold;
+      border-radius: 12px;
+      z-index: 1000;
       text-align: center;
-      color: #111;
-      font-weight: 500;
+      box-shadow: 0 0 25px rgba(46, 204, 113, 0.5);
     }
 
-    /* Стилизация скроллбара */
-    .custom-scroll::-webkit-scrollbar {
-      width: 6px;
-    }
-    .custom-scroll::-webkit-scrollbar-track {
-      background: #a88d79;
-    }
-    .custom-scroll::-webkit-scrollbar-thumb {
-      background: #735946;
-      border-radius: 3px;
-    }
-  </style>
-</head>
-<body id="body" class="h-screen w-screen flex flex-col select-none overflow-hidden font-sans bg-cw-sidebar">
-
-  <!-- Эффект ошибки (красная вспышка) -->
-  <div id="redOverlay" class="red-overlay"></div>
-
-  <!-- Сообщение об успехе -->
-  <div id="successMsg" class="hidden fixed inset-0 flex items-center justify-center z-50 pointer-events-none">
-    <div class="bg-black/80 border-2 border-green-500 text-green-400 text-3xl font-bold px-8 py-4 rounded-xl shadow-2xl animate-bounce">
-      ты умница! так держать.
-    </div>
-  </div>
-
-  <!-- 1. ВЕРХНЯЯ ПАНЕЛЬ (HEADER) -->
-  <header class="h-7 bg-cw-header border-b border-cw flex items-center justify-between px-3 text-xs font-bold text-gray-800 z-10">
-    <div class="flex gap-4 items-center">
-      <span class="cursor-pointer hover:underline">Мой кот</span>
-      <span class="cursor-pointer hover:underline">Чат</span>
-      <span class="cursor-pointer hover:underline">ЛС</span>
-      <span class="cursor-pointer hover:rotate-45 transition-transform">⚙</span>
-    </div>
-    <div class="flex gap-4">
-      <span><b>ТБ:</b> 1000</span>
-      <span><b>Моё местонахождение:</b> Пещерка для тренировок</span>
-    </div>
-  </header>
-
-  <!-- ОСНОВНОЙ КОНТЕНТ -->
-  <div id="mainContainer" class="flex flex-1 overflow-hidden">
-
-    <!-- 2. ЛЕВАЯ ИГРОВАЯ СЕТКА (Пещера) -->
-    <main class="flex-1 game-grid relative overflow-hidden p-4">
-      <div class="cave-rocks"></div>
-
-      <!-- Метка пещеры сверху слева -->
-      <div class="absolute top-4 left-4 location-tag cursor-pointer hover:bg-white z-10">
-        Пещерка для<br>тренировок<br>№2
-      </div>
-
-      <!-- Метка пещеры снизу слева -->
-      <div class="absolute bottom-4 left-4 location-tag cursor-pointer hover:bg-white z-10">
-        Пещера<br>будущих
-      </div>
-
-      <!-- Темный силуэт глаз в левой части пещеры -->
-      <div class="absolute left-10 top-1/3 z-10 pointer-events-none">
-        <div class="relative w-16 h-16">
-          <div class="absolute inset-0 bg-black/80 rounded-full blur-sm"></div>
-          <div class="absolute top-6 left-3 flex gap-2.5 items-center">
-            <div class="w-2 h-1 bg-yellow-400 rounded-full blur-[0.5px] shadow-[0_0_8px_#f59e0b]"></div>
-            <div class="w-2 h-1 bg-yellow-400 rounded-full blur-[0.5px] shadow-[0_0_8px_#f59e0b]"></div>
-          </div>
-        </div>
-      </div>
-    </main>
-
-    <!-- 3. ПРАВАЯ ПАНЕЛЬ (ЧАТ, ДЕЙСТВИЯ, ИНВЕНТАРЬ) -->
-    <aside class="w-[380px] bg-cw-sidebar border-l border-cw flex flex-col h-full">
-      
-      <!-- ЧАТ -->
-      <div class="flex-[1.2] flex flex-col p-2 border-b border-cw bg-cw-chat-bg min-h-0">
-        <div id="chatMessages" class="flex-1 overflow-y-auto custom-scroll space-y-1 text-xs font-mono pr-1 text-gray-900">
-          <!-- Сообщения будут появляться здесь -->
-        </div>
-
-        <!-- Поле ввода -->
-        <div class="mt-2 flex gap-1.5 items-center">
-          <input type="text" id="chatInput" placeholder="Сообщение" class="flex-1 h-7 px-2 bg-cw-input border border-cw rounded text-xs outline-none text-gray-800 placeholder-gray-500">
-          <button id="btnSend" class="h-7 px-3 bg-cw-btn hover:bg-cw-btn-hover text-white text-xs font-bold rounded shadow active:scale-95 transition-all">ОК</button>
-        </div>
-
-        <!-- Громкость -->
-        <div class="flex items-center justify-end gap-2 mt-1 text-[10px] text-gray-700">
-          <input type="range" min="0" max="100" value="70" class="w-36 h-1 accent-amber-700">
-          <span>(правее — громче)</span>
-        </div>
-      </div>
-
-      <!-- ДЕЙСТВИЯ -->
-      <div class="p-2 border-b border-cw">
-        <div class="text-xs font-bold text-gray-800 mb-1.5">Действия</div>
-        <div class="flex gap-1.5">
-          <div class="w-10 h-10 rounded border border-cw bg-amber-800/40 cursor-pointer hover:brightness-110 flex items-center justify-center text-lg">🐾</div>
-          <div class="w-10 h-10 rounded border border-cw bg-amber-800/40 cursor-pointer hover:brightness-110 flex items-center justify-center text-lg">🌿</div>
-          <div class="w-10 h-10 rounded border border-cw bg-amber-800/40 cursor-pointer hover:brightness-110 flex items-center justify-center text-lg">🪵</div>
-          <div class="w-10 h-10 rounded border border-cw bg-amber-800/40 cursor-pointer hover:brightness-110 flex items-center justify-center text-lg">💥</div>
-        </div>
-      </div>
-
-      <!-- ВО РТУ -->
-      <div class="p-2 flex-1 flex flex-col min-h-0">
-        <div class="text-xs font-bold text-gray-800 mb-1.5">Во рту</div>
-        <div class="grid grid-cols-7 gap-1 overflow-y-auto custom-scroll p-0.5">
-          <script>
-            for (let i = 0; i < 21; i++) {
-              document.write('<div class="aspect-square border border-black/10 bg-black/5 rounded flex items-center justify-center text-xs">🐱</div>');
-            }
-          </script>
-        </div>
-      </div>
-
-    </aside>
-  </div>
-
-  <script>
-    // Игроки и их группы
-    const botPlayers = [
-      { name: "Уга", text: "9", group: ["шепот звезд", "состязаньице"] },
-      { name: "Муся", text: "76/2000", group: ["цветок фиалки", "пузырёчек", "пузыречек"] },
-      { name: "Неясни", text: "678/7к", group: ["цветок фиалки", "пузырёчек", "пузыречек"] },
-      { name: "Зонтик", text: "382/500", group: ["отшельник", "северушка"] },
-      { name: "Точка", text: "876/7000", group: ["цветок фиалки", "пузырёчек", "пузыречек"] },
-      { name: "Рей", text: "9", group: ["шепот звезд", "состязаньице"] },
-      { name: "Фиалка", text: "5/15", group: ["отшельник", "северушка"] },
-      { name: "Ворон", text: "6/150", group: ["отшельник", "северушка"] },
-      { name: "Дарк", text: "4585/7к", group: ["шепот звезд", "состязаньице"] },
-      { name: "Пестри", text: "452/500", group: ["отшельник", "северушка"] },
-      { name: "Ори", text: "2445/7000", group: ["шепот звезд", "состязаньице"] },
-      { name: "Тенюш", text: "1997/2к", group: ["цветок фиалки", "пузырёчек", "пузыречек"] }
-    ];
-
-    let isStarted = false;
-    let queue = [];
-    let completedPlayers = new Set();
-
-    const chatMessages = document.getElementById('chatMessages');
-    const chatInput = document.getElementById('chatInput');
-    const btnSend = document.getElementById('btnSend');
-    const redOverlay = document.getElementById('redOverlay');
-    const successMsg = document.getElementById('successMsg');
-    const body = document.getElementById('body');
-
-    function getTime() {
-      const d = new Date();
-      return `[${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}]`;
+    /* Верхнее меню */
+    header {
+      height: 28px;
+      background-color: #e5cdb8;
+      border-bottom: 1px solid #b39b87;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 12px;
+      font-size: 13px;
+      font-weight: bold;
+      color: #000;
     }
 
-    function addMessage(time, content, isHeader = false) {
-      const msg = document.createElement('div');
-      msg.className = 'cursor-pointer hover:bg-black/5 rounded px-1 py-0.5 transition-colors ' + (isHeader ? 'font-bold text-sm' : '');
-      msg.textContent = `${time} ${content}`;
-
-      // Копирование имени в поле ввода при клике
-      msg.addEventListener('click', () => {
-        const parts = content.split('–');
-        if (parts.length > 1) {
-          const author = parts[parts.length - 1].trim();
-          chatInput.value = `${author}, `;
-          chatInput.focus();
-        }
-      });
-
-      chatMessages.appendChild(msg);
-      chatMessages.scrollTop = chatMessages.scrollHeight;
+    .nav-left {
+      display: flex;
+      gap: 18px;
     }
 
-    function triggerError() {
-      body.classList.add('shake');
-      redOverlay.classList.add('active');
-      setTimeout(() => {
-        body.classList.remove('shake');
-        redOverlay.classList.remove('active');
-      }, 350);
+    .nav-right {
+      display: flex;
+      gap: 16px;
     }
 
-    function processMessage() {
-      const val = chatInput.value.trim();
-      if (!val) return;
-
-      const time = getTime();
-
-      // Первый этап — старт по команде "тренирующиеся?"
-      if (!isStarted) {
-        if (val.toLowerCase().includes("тренирующиеся?")) {
-          addMessage(time, `${val} – Таран`, true);
-          chatInput.value = '';
-          startBotQueue();
-        } else {
-          addMessage(time, `${val} – Гость`);
-          chatInput.value = '';
-        }
-        return;
-      }
-
-      // Отправка регулярных ответов
-      addMessage(time, `${val} – Гость`);
-      chatInput.value = '';
-
-      // Проверка ответа
-      const valLower = val.toLowerCase();
-      let foundPlayer = botPlayers.find(p => valLower.includes(p.name.toLowerCase()));
-
-      if (!foundPlayer) {
-        triggerError();
-        return;
-      }
-
-      // Проверка совпадения ключевых слов
-      const isValid = foundPlayer.group.every(kw => valLower.includes(kw));
-
-      if (isValid) {
-        completedPlayers.add(foundPlayer.name);
-        if (completedPlayers.size === botPlayers.length) {
-          successMsg.classList.remove('hidden');
-        }
-      } else {
-        triggerError();
-      }
+    /* Основная сетка */
+    .app-container {
+      display: flex;
+      width: 100vw;
+      height: calc(100vh - 28px);
     }
 
-    function startBotQueue() {
-      isStarted = true;
-      queue = [...botPlayers].sort(() => Math.random() - 0.5);
-
-      const interval = setInterval(() => {
-        if (queue.length === 0) {
-          clearInterval(interval);
-          return;
-        }
-        const p = queue.pop();
-        addMessage(getTime(), `${p.text} – ${p.name}`);
-      }, 2000);
+    /* Левая часть - Пещера */
+    .game-viewport {
+      flex: 1;
+      position: relative;
+      background-color: #1a0b05;
+      background-image: 
+        radial-gradient(circle at 75% 55%, #3d1b0e 0%, #1a0b05 55%, #0a0301 100%);
+      overflow: hidden;
     }
 
-    btnSend.addEventListener('click', processMessage);
-    chatInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') processMessage();
-    });
-  </script>
-</body>
-</html>
+    /* Скалы и камни */
+    .cave-decor-1 {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 200px;
+      height: 100%;
+      background: radial-gradient(ellipse at 0% 40%, #000 0%, transparent 80%);
+      pointer-events: none;
+    }
+
+    .cave-decor-2 {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 450px;
+      height: 220px;
+      background: radial-gradient(ellipse at 20% 100%, #120502 0%, transparent 75%);
+      pointer-events: none;
+    }
+
+    .cave-decor-3 {
+      position: absolute;
+      bottom: 25%;
+      right: 15%;
+      width: 250px;
+      height: 150px;
+      background: radial-gradient(ellipse at 50% 50%, #301308 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    /* Глаза */
+    .eyes {
+      position: absolute;
+      left: 35px;
+      top: 36%;
+      display: flex;
+      gap: 5px;
+      z-index: 3;
+    }
+
+    .eye {
+      width: 5px;
+      height: 4px;
+      background: #ffcc00;
+      border-radius: 50%;
+      box-shadow: 0 0 6px #ffea00;
+    }
+
+    /* Сетка 10 столбцов на 6 рядов */
+    .grid-container {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      grid-template-rows: repeat(6, 1fr);
+      z-index: 2;
+    }
+
+    .grid-cell {
+      border-right: 1px solid rgba(0, 0, 0, 0.7);
+      border
