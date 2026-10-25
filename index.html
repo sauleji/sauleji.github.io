@@ -5,167 +5,280 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Пещерка для тренировок</title>
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      user-select: none;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, -apple-system, sans-serif; overflow: hidden; background: #21150f; }
 
-    html, body {
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      font-family: Arial, sans-serif;
-      background-color: #d1bba7;
-    }
-
-    /* Эффект ошибки */
-    body.error-shake {
-      animation: shake 0.35s ease-in-out;
-    }
-
-    @keyframes shake {
-      0%, 100% { transform: translate(0, 0); }
-      20% { transform: translate(-8px, 0); }
-      40% { transform: translate(8px, 0); }
-      60% { transform: translate(-5px, 0); }
-      80% { transform: translate(5px, 0); }
-    }
-
-    #error-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(220, 38, 38, 0.4);
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.15s ease;
-      z-index: 999;
-    }
-
-    #error-overlay.active {
-      opacity: 1;
-    }
-
-    /* Успех */
-    #success-modal {
-      display: none;
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(0, 0, 0, 0.9);
-      border: 3px solid #2ecc71;
-      color: #2ecc71;
-      padding: 22px 42px;
-      font-size: 28px;
-      font-weight: bold;
-      border-radius: 12px;
-      z-index: 1000;
-      text-align: center;
-      box-shadow: 0 0 25px rgba(46, 204, 113, 0.5);
-    }
-
-    /* Верхнее меню */
-    header {
-      height: 28px;
-      background-color: #e5cdb8;
-      border-bottom: 1px solid #b39b87;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 12px;
-      font-size: 13px;
-      font-weight: bold;
-      color: #000;
-    }
-
-    .nav-left {
-      display: flex;
-      gap: 18px;
-    }
-
-    .nav-right {
-      display: flex;
-      gap: 16px;
-    }
-
-    /* Основная сетка */
-    .app-container {
-      display: flex;
-      width: 100vw;
-      height: calc(100vh - 28px);
-    }
-
-    /* Левая часть - Пещера */
-    .game-viewport {
-      flex: 1;
+    .catworld{position:relative;display:grid;grid-template-columns:minmax(0,1fr) minmax(420px,42vw)!important;grid-template-rows:auto minmax(0,1fr)!important;height:100vh!important;min-height:0!important;padding:0!important;gap:0!important;overflow:hidden;background:#21150f!important}
+    .cw-topbar{grid-column:1/-1;grid-row:1;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;padding:6px 14px;background:#e8d5c4;color:#2b2118;font-size:18px}
+    .cw-topleft,.cw-topright{display:flex;gap:28px;align-items:center}
+    
+    /* Игровое поле. Картинка должна лежать в корне репозитория */
+    .meadow{
+      grid-column:1!important;
+      grid-row:2!important;
+      min-height:0!important;
+      height:100%!important;
+      background: url('bg.jpg') center/cover no-repeat; 
       position: relative;
-      background-color: #1a0b05;
-      background-image: 
-        radial-gradient(circle at 75% 55%, #3d1b0e 0%, #1a0b05 55%, #0a0301 100%);
-      overflow: hidden;
+    }
+    
+    .cw-grid{position:absolute;inset:0;pointer-events:none;opacity:0.15;background-image:linear-gradient(90deg,#000 1px,transparent 1px),linear-gradient(#000 1px,transparent 1px);background-size:10% 16.666%}
+    .cw-loc{position:absolute;z-index:1;max-width:100px;padding:6px 10px;border-radius:10px;background:#e8dfd6;color:#222;font-size:10px;text-align:center;line-height:1.25}
+
+    .cw-side{grid-column:2;grid-row:2;display:flex;flex-direction:column;gap:8px;min-height:0;overflow-y:auto;padding:5px;background:#2a1c13}
+    .cw-chat{flex:1 0 360px;display:flex;flex-direction:column;min-height:0;background:#b9a493;color:#2b2118;border-radius:6px;overflow:hidden;border: 2px solid #8f7b6b;}
+    .cw-topic{padding:10px 12px;font-size:19px;font-weight:600;border-bottom:1px solid #d6c7b9}
+    .cw-msgs{flex:1;min-height:0;overflow-y:auto; background: #a89484;}
+    .cw-row{display:flex;align-items:baseline;gap:8px;padding:6px 10px;border-bottom:1px solid #d0c0b1;font-size:16px; transition: background 0.2s;}
+    .cw-row.trainee{cursor:pointer}
+    .cw-row.trainee:hover{background:#c9b8a8}
+    .cw-row.chosen{background:#d4c3b3;outline:2px solid #c86d28;outline-offset:-2px}
+    .cw-row.done{opacity:.45;cursor:default; background: transparent;}
+    .cw-t{font-size:12px;color:#5a4a3c}
+    .cw-n{font-weight:700}
+    .cw-row.me .cw-n{color:#7a3f10}
+    .cw-a{margin-left:auto;color:#4a3a2c}
+    
+    .cw-form{display:flex;gap:8px;padding:10px;background:#b9a493}
+    .cw-form input{flex:1;min-width:0;padding:10px 12px;border:0;border-radius:6px;background:#eadbd0;color:#2b2118;font:inherit;outline:none}
+    .cw-form button{padding:0 18px;border:0;border-radius:6px;background:#c86d28;color:#fff;font-weight:700;cursor:pointer; transition: background 0.2s;}
+    .cw-form button:hover { background: #e08b4d; }
+
+    .cw-panel{background:#8f7b6b;border-radius:6px;padding:8px 10px;color:#241a12}
+    .cw-panel h3{margin:0 0 8px;font-size:19px}
+    .cw-tiles{display:flex;flex-wrap:wrap;gap:6px}
+    .cw-tiles span{width:62px;height:62px;display:grid;place-items:center;border-radius:6px;background:#a99585;font-size:30px}
+
+    .cw-flash{position:absolute;inset:0;background:#d01c1c;opacity:0;pointer-events:none;z-index:9}
+    .cw-win{position:absolute;inset:0;z-index:10;display:grid;place-items:center;padding:20px;text-align:center;pointer-events:none;color:#7dff9a;font-size:clamp(30px,5vw,64px);font-weight:800;text-shadow:0 3px 18px #000}
+    .cw-win[hidden]{display:none}
+    @keyframes cw-shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+    @keyframes cw-red{0%,100%{opacity:0}30%{opacity:.3}}
+    .catworld.cw-error{animation:cw-shake .5s ease}
+    .catworld.cw-error .cw-flash{animation:cw-red .7s ease}
+
+    @media(max-width:700px){
+     .catworld{grid-template-columns:1fr!important;grid-template-rows:auto 38vh auto!important;height:auto!important;overflow:visible}
+     .meadow{grid-column:1!important;grid-row:2!important}
+     .cw-side{grid-column:1;grid-row:3;overflow:visible}
+     .cw-chat{flex-basis:420px}
+    }
+  </style>
+</head>
+<body>
+
+  <section class="catworld">
+    <div class="cw-topbar">
+      <div class="cw-topleft"><span>Мой кот</span><span>Чат</span><span>ЛС</span><span>⚙</span></div>
+      <div class="cw-topright"><span>ТБ: 1000</span><span><b>Моё местонахождение:</b> Пещерка для тренировок</span></div>
+    </div>
+
+    <main class="meadow" aria-label="Игровое поле">
+      <div class="cw-grid"></div>
+      <div class="cw-loc" style="left:5px;top:82px">Пещерка для<br>тренировок<br>№2</div>
+      <div class="cw-loc" style="left:5px;bottom:12px">Пещера<br>будущих</div>
+    </main>
+
+    <aside class="cw-side">
+      <section class="cw-chat">
+        <div class="cw-topic" id="topic">Напиши в чат: «Тренирующиеся?»</div>
+        <div class="cw-msgs" id="messages" aria-live="polite"></div>
+        <form class="cw-form" id="chatForm">
+          <input id="chatInput" maxlength="300" autocomplete="off" placeholder="Сообщение" aria-label="Сообщение">
+          <button type="submit">OK</button>
+        </form>
+      </section>
+      <section class="cw-panel"><h3>Действия</h3><div class="cw-tiles"><span>🐾</span><span>🌿</span><span>🪨</span><span>💤</span></div></section>
+      <section class="cw-panel"><h3>Во рту</h3><div class="cw-tiles"><span>🦴</span><span>🍃</span><span>🐟</span><span>🎁</span><span>📖</span><span>⭐</span></div></section>
+    </aside>
+  </section>
+
+  <script>
+  (() => {
+    const MY = 'Таран';
+
+    const PAIRS = {
+      A: ['шепот', 'состязан'],
+      B: ['цветок', 'пузыр'],
+      C: ['отшельник', 'северуш']
+    };
+
+    const TASKS = [
+      {name:'Уга',    text:'9',         pair:'A'},
+      {name:'Рей',    text:'9',         pair:'A'},
+      {name:'Дарк',   text:'4585/7к',   pair:'A'},
+      {name:'Ори',    text:'2445/7000', pair:'A'},
+      {name:'Точка',  text:'876/7000',  pair:'B'},
+      {name:'Неясни', text:'678/7к',    pair:'B'},
+      {name:'Тенюш',  text:'1997/2к',   pair:'B'},
+      {name:'Муся',   text:'76/2000',   pair:'B'},
+      {name:'Пестри', text:'452/500',   pair:'C'},
+      {name:'Зонтик', text:'382/500',   pair:'C'},
+      {name:'Ворон',  text:'6/150',     pair:'C'},
+      {name:'Фиалка', text:'5/15',      pair:'C'}
+    ];
+
+    const game  = document.querySelector('.catworld');
+    const list  = document.getElementById('messages');
+    const form  = document.getElementById('chatForm');
+    const input = document.getElementById('chatInput');
+    const topic = document.getElementById('topic');
+    if (!game || !list || !form || !input) return;
+
+    const flash = document.createElement('div'); flash.className = 'cw-flash';
+    const win = document.createElement('div'); win.className = 'cw-win'; win.hidden = true;
+    win.textContent = 'Ты умница! Так держать!';
+    game.append(flash, win);
+
+    const norm  = s => s.toLowerCase().replace(/ё/g, 'е');
+    const clock = () => new Date().toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'});
+
+    const done = new Set();
+    let selected = null, started = false, timer = null;
+
+    function addRow(name, text, kind) {
+      const row = document.createElement('div');
+      row.className = 'cw-row' + (kind ? ' ' + kind : '');
+      row.dataset.name = name;
+      
+      const parts = [
+        ['cw-t', '[' + clock() + ']'],
+        ['cw-x', text],
+        ['cw-d', '—'],
+        ['cw-n', name]
+      ];
+      
+      parts.forEach(([c, t]) => { 
+        const s = document.createElement('span'); 
+        s.className = c; 
+        s.textContent = t; 
+        row.appendChild(s); 
+      });
+      
+      if (kind === 'trainee') { 
+        const a = document.createElement('span'); 
+        a.className = 'cw-a'; 
+        a.textContent = '→'; 
+        row.appendChild(a); 
+      }
+      
+      list.appendChild(row);
+      list.scrollTop = list.scrollHeight;
     }
 
-    /* Скалы и камни */
-    .cave-decor-1 {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 200px;
-      height: 100%;
-      background: radial-gradient(ellipse at 0% 40%, #000 0%, transparent 80%);
-      pointer-events: none;
+    function refresh() {
+      list.querySelectorAll('.cw-row.trainee').forEach(r =>
+        r.classList.toggle('chosen', !!selected && r.dataset.name === selected.name && !done.has(r.dataset.name))
+      );
     }
 
-    .cave-decor-2 {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      width: 450px;
-      height: 220px;
-      background: radial-gradient(ellipse at 20% 100%, #120502 0%, transparent 75%);
-      pointer-events: none;
+    function setTopic() {
+      topic.textContent = started
+        ? 'Расставлено: ' + done.size + '/' + TASKS.length + ' — нажми на сообщение и напиши имена ДГ'
+        : 'Напиши в чат: «Тренирующиеся?»';
     }
 
-    .cave-decor-3 {
-      position: absolute;
-      bottom: 25%;
-      right: 15%;
-      width: 250px;
-      height: 150px;
-      background: radial-gradient(ellipse at 50% 50%, #301308 0%, transparent 70%);
-      pointer-events: none;
+    function start() {
+      started = true; 
+      setTopic();
+      const queue = TASKS.slice();
+      for (let i = queue.length - 1; i > 0; i--) { 
+        const j = Math.floor(Math.random() * (i + 1)); 
+        [queue[i], queue[j]] = [queue[j], queue[i]]; 
+      }
+      
+      timer = setInterval(() => {
+        if (!queue.length) { clearInterval(timer); return; }
+        const t = queue.shift();
+        addRow(t.name, t.text, 'trainee');
+      }, 2000);
     }
 
-    /* Глаза */
-    .eyes {
-      position: absolute;
-      left: 35px;
-      top: 36%;
-      display: flex;
-      gap: 5px;
-      z-index: 3;
+    function fail(t) {
+      game.classList.remove('cw-error'); 
+      void game.offsetWidth; 
+      game.classList.add('cw-error');
+      setTimeout(() => game.classList.remove('cw-error'), 750);
+      
+      selected = t; 
+      refresh();
+      input.value = t.name + ', '; 
     }
 
-    .eye {
-      width: 5px;
-      height: 4px;
-      background: #ffcc00;
-      border-radius: 50%;
-      box-shadow: 0 0 6px #ffea00;
+    function success(t) {
+      done.add(t.name); 
+      selected = null;
+      
+      list.querySelectorAll('.cw-row.trainee').forEach(r => {
+        if (r.dataset.name === t.name) { 
+          r.classList.add('done'); 
+          r.classList.remove('chosen'); 
+          const arrow = r.querySelector('.cw-a');
+          if (arrow) arrow.textContent = '✓'; 
+        }
+      });
+      
+      setTopic();
+      
+      if (done.size === TASKS.length) {
+        win.hidden = false;
+      }
     }
 
-    /* Сетка 10 столбцов на 6 рядов */
-    .grid-container {
-      position: absolute;
-      inset: 0;
-      display: grid;
-      grid-template-columns: repeat(10, 1fr);
-      grid-template-rows: repeat(6, 1fr);
-      z-index: 2;
-    }
+    list.addEventListener('click', e => {
+      const row = e.target.closest('.cw-row');
+      if (!row || row.classList.contains('me') || row.classList.contains('done')) return;
+      
+      input.value = row.dataset.name + ', ';
+      input.focus();
+      
+      const t = TASKS.find(x => x.name === row.dataset.name);
+      if (t) { 
+        selected = t; 
+        refresh(); 
+      }
+    });
 
-    .grid-cell {
-      border-right: 1px solid rgba(0, 0, 0, 0.7);
-      border
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const text = input.value.trim();
+      if (!text) return;
+      
+      input.value = '';
+      addRow(MY, text, 'me');
+
+      const n = norm(text);
+      
+      if (!started) { 
+        if (n.includes('тренирующ')) start(); 
+        return; 
+      }
+
+      let t = null, rest = n;
+      
+      for (const x of TASKS) {
+        if (done.has(x.name)) continue;
+        const m = n.match(new RegExp('^' + norm(x.name) + '(?![а-я])'));
+        if (m) { 
+          t = x; 
+          rest = n.slice(m[0].length); 
+          break; 
+        }
+      }
+      
+      if (!t && selected) t = selected;
+      
+      if (!t) return; 
+
+      if (PAIRS[t.pair].every(s => rest.includes(s))) {
+        success(t);
+      } else {
+        fail(t);
+      }
+    });
+
+    setTopic();
+  })();
+  </script>
+</body>
+</html>
