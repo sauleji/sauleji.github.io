@@ -198,7 +198,31 @@ html,body,#app{width:100%!important;max-width:none!important;margin:0!important}
 @media(max-width:700px){.fitonyashki-view{grid-template-columns:minmax(0,55%) minmax(0,45%)!important}.fitonyashki-view>.conversation-right{font-size:14px!important;padding:10px!important}}
 </style></head>
 <body>
-<div id="app"><section class="catworld"><main class="meadow" aria-label="Игровое поле"></main><aside class="chatbox"><div class="chat-title">Чат поляны</div><div class="messages" id="messages" aria-live="polite"></div><form class="composer" id="chatForm"><input id="chatInput" maxlength="300" autocomplete="off" placeholder="Написать сообщение..." aria-label="Сообщение"><button type="submit">OK</button></form></aside></section><div class="top">
+<div id="app"><section class="catworld">
+  <div class="cw-topbar">
+    <div class="cw-topleft"><span>Мой кот</span><span>Чат</span><span>ЛС</span><span>⚙</span></div>
+    <div class="cw-topright"><span>ТБ: 1000</span><span><b>Моё местонахождение:</b> Пещерка для тренировок</span></div>
+  </div>
+
+  <main class="meadow" aria-label="Игровое поле">
+    <div class="cw-grid"></div>
+    <div class="cw-loc" style="left:5px;top:82px">Пещерка для<br>тренировок<br>№2</div>
+    <div class="cw-loc" style="left:5px;bottom:12px">Пещера<br>будущих</div>
+  </main>
+
+  <aside class="cw-side">
+    <section class="cw-chat">
+      <div class="cw-topic" id="topic">Напиши в чат: «Тренирующиеся?»</div>
+      <div class="cw-msgs" id="messages" aria-live="polite"></div>
+      <form class="cw-form" id="chatForm">
+        <input id="chatInput" maxlength="300" autocomplete="off" placeholder="Сообщение" aria-label="Сообщение">
+        <button type="submit">OK</button>
+      </form>
+    </section>
+    <section class="cw-panel"><h3>Действия</h3><div class="cw-tiles"><span>🐾</span><span>🌿</span><span>🪨</span><span>💤</span></div></section>
+    <section class="cw-panel"><h3>Во рту</h3><div class="cw-tiles"><span>🦴</span><span>🍃</span><span>🐟</span><span>🎁</span><span>📖</span><span>⭐</span></div></section>
+  </aside>
+</section>
 <header><div class="brand"><div class="logo">🐾</div><div><h1>Тренажёр [1кат]</h1><p class="subtitle">[КПВ] · тренировочное поле</p></div></div><div class="actions"><button id="helpBtn">Инструкция</button><button id="themeBtn">◐ Тема</button><button class="primary" id="newBtn">↻ Новая игра</button></div></header>
 <div class="layout"><main class="panel"><div class="board-head"><h2>Маршрут</h2><div class="stats"><div class="stat"><strong id="dangerCount">12</strong>опасных</div><div class="stat"><strong id="timer">0:00</strong>время</div></div></div><div id="grid" class="grid" aria-label="Игровое поле"></div><div class="status" id="status" role="status">Начните с клетки с рамкой — она безопасна. Избегайте опасных клеток!</div><div class="mode-row"><button class="selected" id="jumpMode">🐾 Прыжок</button><button id="markMode">💣 Опасная</button></div><div class="legend"><div class="legend-item"><span class="legend-icon">1–8</span> число опасных рядом</div><div class="legend-item"><span class="legend-icon">💣</span> ваша отметка</div><div class="legend-item"><span class="legend-icon">!</span> подсказка</div><div class="legend-item"><span class="legend-icon">◇</span> стартовая клетка</div></div></main>
 <aside class="panel side"><h2>Параметры</h2><div class="field"><label for="height">Высота подъёма</label><select id="height"><option value="1">1 — низкая</option><option value="2">2</option><option value="3" selected>3 — средняя</option><option value="4">4</option><option value="5">5 — высокая</option></select></div><div class="field"><label for="lu">Уровень лазания (ЛУ) <span id="luValue">5</span></label><select id="lu"><option value="0">ЛУ 0</option><option value="1">ЛУ 1</option><option value="2">ЛУ 2</option><option value="3">ЛУ 3</option><option value="4">ЛУ 4</option><option value="5" selected>ЛУ 5</option><option value="6">ЛУ 6</option><option value="7">ЛУ 7</option><option value="8">ЛУ 8</option><option value="9">ЛУ 9</option></select></div><div class="field"><label for="season">Сезон</label><select id="season"><option>Зелёные листья</option><option>Юные листья</option><option>Листопад</option><option>Голые деревья</option></select></div><div class="field"><label for="age">Возраст / рост</label><select id="age"><option>Взрослый</option><option>Подросток</option><option>Котёнок</option></select></div><button class="primary" id="applyBtn" style="width:100%">Применить настройки</button><div class="help" id="help"><h3>Как играть</h3><p>Открывайте соседние клетки, ориентируясь на числа: число показывает, сколько опасных клеток находится среди восьми соседей. Кликните правой кнопкой мыши или выберите «Опасная», чтобы поставить отметку. Отметьте все опасные клетки или откройте все безопасные — и маршрут будет пройден.</p></div><div class="help"><h3>Подсказка</h3><p id="hintText">При ЛУ 5 шанс подсказки составляет 20%. Нажмите на открытую клетку, чтобы попробовать получить подсказку на соседней клетке.</p><button id="hintBtn" style="width:100%;margin-top:10px">Проверить подсказку</button></div></aside></div><footer>Учебный прототип · не подключён к CatWar и не сохраняет игровые данные</footer>
@@ -221,58 +245,134 @@ html,body,#app{width:100%!important;max-width:none!important;margin:0!important}
 </script>
 <script>
 (() => {
- const form=document.getElementById('chatForm');
- const input=document.getElementById('chatInput');
- const messages=document.getElementById('messages');
- const cat=document.getElementById('cat');
- const clock=()=>new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
- function addMessage(sender,text){
-  const row=document.createElement('div');row.className='message';
-  const time=document.createElement('span');time.className='time';time.textContent='['+clock()+'] ';
-  const name=document.createElement('span');name.className='sender';name.textContent=sender+': ';
-  const body=document.createElement('span');body.textContent=text;
-  row.append(time,name,body);messages.appendChild(row);messages.scrollTop=messages.scrollHeight;
- }
- form.addEventListener('submit',event=>{
-  if(document.querySelector('[data-view="game"].active'))return;
-  event.preventDefault();const text=input.value.trim();if(!text)return;
-  addMessage('Ты',text);input.value='';input.focus();
- });
- cat.addEventListener('click',()=>addMessage('Система','Котик приветственно мяукнул 🐾'));
-})();
-</script>
 <script>
 (() => {
- const app=document.getElementById('app');
- const game=app.querySelector('.catworld');
- if(!game)return;
- const tabs=document.createElement('nav');tabs.className='site-tabs';tabs.innerHTML='<button type="button" class="active" data-view="fit">Беседа</button><button type="button" data-view="game" disabled title="Сначала правильно составь все пары">Игровая 🔒</button>';
- const fit=document.createElement('section');fit.className='fitonyashki-view';fit.innerHTML='<div class="vk-conversation-title"><span class="vk-back">‹</span><span class="vk-avatar">🐾</span><span class="vk-title-text"><b>Фитоняшки</b><small>153 участника, 31 онлайн</small></span><span class="vk-search">⌕　⋯</span></div><div class="pinned" style="padding:10px 18px;background:#292929;border-bottom:1px solid #3a3a3a;font-size:12px;color:#7db7ff">📌 { БЛОГ | ТАБЛИЦА | РАСПИСАНИЕ | ОТЧЁТЫ | ОБЪЯВЛЕНИЯ } 🏀 ФЛУД ТРЕНЕРОВ</div><div class="fit-workspace"><div class="fit-chat-column"><div class="pair-list" id="pairList"></div><form class="pair-composer" id="pairComposer"><input id="pairInput" autocomplete="off" placeholder="БГ — … и МГ — …" aria-label="Ответ с Большой и Маленькой грушей"><button type="submit">Отправить</button></form><div class="pair-status" id="pairStatus" role="status" aria-live="polite" hidden></div></div><aside class="fit-instructions">Здесь тебе предстоит распределить тренеров по ДГ/ОГ/ТГ.<br><br>Сначала выбирай БГ, а затем МГ.<br><br>Помни: сильный к сильному, слабый к слабому.</aside></div>';
- app.insertBefore(tabs,app.firstChild);app.insertBefore(fit,game);game.hidden=true;
- const people=[['пузырёчек','1712876','280/500'],['Отшельник','1126512','2508'],['Цветок Фиалки','1703440','3415/7к'],['Северушка#1712377','1712377','30/300'],['состязаньице','1713290','1к/7к'],['Шепот Звезд','1590985','9']];
- const correct=new Set(['0-2','1-3','4-5']);let first=null,second=null,solved=new Set(),locked=false;
- const list=fit.querySelector('#pairList'),status=fit.querySelector('#pairStatus'),pairForm=fit.querySelector('#pairComposer'),pairInput=fit.querySelector('#pairInput');
- function render(){list.innerHTML='';people.forEach((p,i)=>{const b=document.createElement('button');b.type='button';b.className='pair-message';if(first===i)b.classList.add('big');if(second===i)b.classList.add('small');if(solved.has(i))b.classList.add('matched');b.innerHTML='<span class="avatar">'+p[0].trim().charAt(0).toUpperCase()+'</span><span><span class="pair-name"></span><span class="pair-id"></span></span><span class="pick-tag"></span><span class="vk-time">17:22</span>';b.querySelector('.pair-name').textContent=p[0];b.querySelector('.pair-id').textContent=p[1]+' · '+p[2];b.querySelector('.pick-tag').textContent=first===i?'БГ':second===i?'МГ':'';b.addEventListener('click',()=>choose(i));list.appendChild(b);});}
- function choose(i){if(locked||solved.size===6)return;if(first===null){first=i;second=null;pairInput.value='БГ - '+people[i][0]+' и МГ - ';render();pairInput.focus();return;}if(second===null){if(first===i)return;second=i;pairInput.value='БГ - '+people[first][0]+' и МГ - '+people[second][0];render();pairInput.focus();return;}first=i;second=null;pairInput.value='БГ - '+people[i][0]+' и МГ - ';render();}
- pairForm.addEventListener('submit',e=>{e.preventDefault();if(first===null||second===null||!pairInput.value.trim())return;const key=[Math.min(first,second),Math.max(first,second)].join('-');if(!correct.has(key)){pairInput.value='';fit.classList.remove('wrong-pair');void fit.offsetWidth;fit.classList.add('wrong-pair');setTimeout(()=>fit.classList.remove('wrong-pair'),700);first=null;second=null;render();return;}solved.add(first);solved.add(second);first=null;second=null;pairInput.value='';render();if(solved.size===6){status.hidden=false;status.className='pair-status good';status.textContent='Молодец. Переходи во вкладку «Игровая»';const gameButton=tabs.querySelector('[data-view="game"]');gameButton.disabled=false;gameButton.textContent='Игровая';gameButton.removeAttribute('title');}else{status.hidden=true;}});
- tabs.addEventListener('click',e=>{const btn=e.target.closest('button[data-view]');if(!btn)return;const showGame=btn.dataset.view==='game';if(showGame&&btn.disabled)return;tabs.querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===btn));fit.hidden=showGame;game.hidden=!showGame;});
- render();
-})();
-</script>
-<script>
-(()=>{
- const game=document.querySelector('.catworld'), messages=document.getElementById('messages'), form=document.getElementById('chatForm'), input=document.getElementById('chatInput'), chatTitle=document.querySelector('.chat-title');
- if(!game||!messages||!form||!input)return;
- const tasks=[['Уга','9','Шепот звезд|Состязаньице'],['Муся','76/2000','Цветок Фиалки|Пузырёчек'],['Неясни','678/7к','Цветок Фиалки|Пузырёчек'],['Зонтик','382/500','Отшельник|Северушка'],['Точка','876/7000','Цветок Фиалки|Пузырёчек'],['Рей','9','Шепот звезд|Состязаньице'],['Фиалка','5/15','Отшельник|Северушка'],['Ворон','6/150','Отшельник|Северушка'],['Дарк','4585/7к','Шепот звезд|Состязаньице'],['Пестри','452/500','Отшельник|Северушка'],['Ори','2445/7000','Шепот звезд|Состязаньице'],['Тенюш','1997/2к','Цветок Фиалки|Пузырёчек']];
- let current=null,started=false,finished=false,timer=null;const completed=new Set();
- const banner=document.createElement('div');banner.className='game-win';banner.textContent='Ты умница! Так держать.';banner.hidden=true;game.appendChild(banner);
- chatTitle.textContent='Тренирующиеся? — Таран';
- const style=document.createElement('style');style.textContent='.game-win{position:fixed;z-index:100;inset:0;display:grid;place-items:center;background:#0005;color:#70f09a;font-size:clamp(28px,5vw,56px);font-weight:800;text-align:center;text-shadow:0 3px 18px #000;pointer-events:none}.game-win[hidden]{display:none}.game-target{cursor:pointer}.game-target.chosen{outline:1px solid #8b5c36;background:#292725}.game-target.done{opacity:.5}.catworld.game-error{animation:game-shake .55s ease,game-red .7s ease}@keyframes game-shake{0%,100%{transform:translateX(0)}15%,45%,75%{transform:translateX(-5px)}30%,60%,90%{transform:translateX(5px)}}@keyframes game-red{0%,100%{box-shadow:inset 0 0 0 0 transparent}25%,65%{box-shadow:inset 0 0 0 999px #c51d1d66}}';document.head.appendChild(style);
- function clock(){return new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});}
- function addChatMessage(sender,text,clickable=false,task=null){const row=document.createElement(clickable?'button':'div');if(clickable){row.type='button';row.className='message game-target';row.dataset.person=task[0];row.dataset.number=task[1];}else row.className='message';const time=document.createElement('span');time.className='time';time.textContent='['+clock()+'] ';const body=document.createElement('span');body.textContent=text+' — ';const name=document.createElement('span');name.className='sender';name.textContent=sender;row.append(time,body,name);if(clickable)row.addEventListener('click',()=>{if(completed.has(task[0])||finished)return;current=task;messages.querySelectorAll('.game-target').forEach(x=>x.classList.toggle('chosen',x===row));input.value=task[0]+', ';input.focus();});messages.appendChild(row);messages.scrollTop=messages.scrollHeight;return row;}
- function startSequence(){if(started)return;started=true;messages.innerHTML='';const shuffled=[...tasks].sort(()=>Math.random()-.5);let i=0;function next(){if(i>=shuffled.length){clearInterval(timer);timer=null;return;}const task=shuffled[i++];addChatMessage(task[0],task[1],true,task);}next();timer=setInterval(next,2000);}
- function sendGuestMessage(text){addChatMessage('Гость',text);}
- form.addEventListener('submit',event=>{event.preventDefault();event.stopImmediatePropagation();const text=input.value.trim();if(!text)return;if(!started){sendGuestMessage(text);input.value='';if(text.toLocaleLowerCase('ru-RU').replace(/[?!.,\s]/g,'')==='тренирующиеся')startSequence();return;}if(!current){sendGuestMessage(text);input.value='';return;}const lower=text.toLocaleLowerCase('ru-RU').replace(/ё/g,'е');const names=current[2].split('|').map(n=>n.toLocaleLowerCase('ru-RU').replace(/ё/g,'е'));if(!names.every(n=>lower.includes(n))){game.classList.remove('game-error');void game.offsetWidth;game.classList.add('game-error');setTimeout(()=>game.classList.remove('game-error'),750);input.value='';const reactions=['блин, может не надо?','алё ну...','не, я к ним не пойду','ты уверен?','а может всё-таки не к ним?'];addChatMessage(current[0],reactions[Math.floor(Math.random()*reactions.length)]);current=null;messages.querySelectorAll('.game-target').forEach(x=>x.classList.remove('chosen'));return;}sendGuestMessage(text);addChatMessage(current[0],'спасибо!');completed.add(current[0]);messages.querySelectorAll('.game-target').forEach(x=>{if(x.dataset.person===current[0]){x.classList.remove('chosen');x.classList.add('done');x.disabled=true;}});current=null;input.value='';if(completed.size===tasks.length){finished=true;banner.hidden=false;if(timer){clearInterval(timer);timer=null;}}});
+ const MY = 'Таран'; // имя гостя в чате
+
+ const PAIRS = {
+  A: ['шепот', 'состязан'],   // Шепот Звезд + Состязаньице
+  B: ['цветок', 'пузыр'],     // Цветок Фиалки + Пузырёчек
+  C: ['отшельник', 'северуш'] // Отшельник + Северушка
+ };
+ const TASKS = [
+  {name:'Уга',    text:'9',         pair:'A'},
+  {name:'Рей',    text:'9',         pair:'A'},
+  {name:'Дарк',   text:'4585/7к',   pair:'A'},
+  {name:'Ори',    text:'2445/7000', pair:'A'},
+  {name:'Точка',  text:'876/7000',  pair:'B'},
+  {name:'Неясни', text:'678/7к',    pair:'B'},
+  {name:'Тенюш',  text:'1997/2к',   pair:'B'},
+  {name:'Муся',   text:'76/2000',   pair:'B'},
+  {name:'Пестри', text:'452/500',   pair:'C'},
+  {name:'Зонтик', text:'382/500',   pair:'C'},
+  {name:'Ворон',  text:'6/150',     pair:'C'},
+  {name:'Фиалка', text:'5/15',      pair:'C'}
+ ];
+
+ const game  = document.querySelector('.catworld');
+ const list  = document.getElementById('messages');
+ const form  = document.getElementById('chatForm');
+ const input = document.getElementById('chatInput');
+ const topic = document.getElementById('topic');
+ if (!game || !list || !form || !input) return;
+
+ const flash = document.createElement('div'); flash.className = 'cw-flash';
+ const win = document.createElement('div'); win.className = 'cw-win'; win.hidden = true;
+ win.textContent = 'Ты умница! Так держать!';
+ game.append(flash, win);
+
+ const norm  = s => s.toLowerCase().replace(/ё/g, 'е');
+ const clock = () => new Date().toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'});
+
+ const done = new Set();
+ let selected = null, started = false, timer = null;
+
+ function addRow(name, text, kind) {
+  const row = document.createElement('div');
+  row.className = 'cw-row' + (kind ? ' ' + kind : '');
+  row.dataset.name = name;
+  const parts = [
+   ['cw-t', '[' + clock() + ']'],
+   ['cw-x', text],
+   ['cw-d', '—'],
+   ['cw-n', name]
+  ];
+  parts.forEach(([c, t]) => { const s = document.createElement('span'); s.className = c; s.textContent = t; row.appendChild(s); });
+  if (kind === 'trainee') { const a = document.createElement('span'); a.className = 'cw-a'; a.textContent = '→'; row.appendChild(a); }
+  list.appendChild(row);
+  list.scrollTop = list.scrollHeight;
+ }
+
+ function refresh() {
+  list.querySelectorAll('.cw-row.trainee').forEach(r =>
+   r.classList.toggle('chosen', !!selected && r.dataset.name === selected.name && !done.has(r.dataset.name)));
+ }
+
+ function setTopic() {
+  topic.textContent = started
+   ? 'Расставлено: ' + done.size + '/' + TASKS.length + ' — нажми на сообщение и напиши имена ДГ'
+   : 'Напиши в чат: «Тренирующиеся?»';
+ }
+
+ function start() {
+  started = true; setTopic();
+  const queue = TASKS.slice();
+  for (let i = queue.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [queue[i], queue[j]] = [queue[j], queue[i]]; }
+  timer = setInterval(() => {
+   if (!queue.length) { clearInterval(timer); return; }
+   const t = queue.shift();
+   addRow(t.name, t.text, 'trainee');
+  }, 2000);
+ }
+
+ function fail(t) {
+  game.classList.remove('cw-error'); void game.offsetWidth; game.classList.add('cw-error');
+  setTimeout(() => game.classList.remove('cw-error'), 750);
+  selected = t; refresh();
+  input.value = t.name + ', ';
+ }
+
+ function success(t) {
+  done.add(t.name); selected = null;
+  list.querySelectorAll('.cw-row.trainee').forEach(r => {
+   if (r.dataset.name === t.name) { r.classList.add('done'); r.classList.remove('chosen'); r.querySelector('.cw-a').textContent = '✓'; }
+  });
+  setTopic();
+  if (done.size === TASKS.length) win.hidden = false;
+ }
+
+ // клик по сообщению -> «Имя, » в поле ввода
+ list.addEventListener('click', e => {
+  const row = e.target.closest('.cw-row');
+  if (!row || row.classList.contains('me')) return;
+  input.value = row.dataset.name + ', ';
+  input.focus();
+  const t = TASKS.find(x => x.name === row.dataset.name);
+  if (t && !done.has(t.name)) { selected = t; refresh(); }
+ });
+
+ form.addEventListener('submit', e => {
+  e.preventDefault();
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  addRow(MY, text, 'me');
+
+  const n = norm(text);
+  if (!started) { if (n.includes('тренирующ')) start(); return; }
+
+  // кому адресовано: имя в начале сообщения, иначе — выбранное кликом
+  let t = null, rest = n;
+  for (const x of TASKS) {
+   if (done.has(x.name)) continue;
+   const m = n.match(new RegExp('^' + norm(x.name) + '(?![а-я])'));
+   if (m) { t = x; rest = n.slice(m[0].length); break; }
+  }
+  if (!t && selected) t = selected;
+  if (!t) return; // обычное сообщение, не ответ
+
+  if (PAIRS[t.pair].every(s => rest.includes(s))) success(t); else fail(t);
+ });
 })();
 </script>
 
@@ -344,3 +444,47 @@ html,body,#app{width:100%!important;max-width:none!important;margin:0!important}
  view.append(left,right);
 })();
 </script>
+<style id="game-interactive-chat">
+.catworld{position:relative;grid-template-columns:minmax(0,1fr) minmax(420px,42vw)!important;grid-template-rows:auto minmax(0,1fr)!important;height:100vh!important;min-height:0!important;padding:0!important;gap:0!important;overflow:hidden;background:#21150f!important}
+.cw-topbar{grid-column:1/-1;grid-row:1;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;padding:6px 14px;background:#e8d5c4;color:#2b2118;font-size:18px}
+.cw-topleft,.cw-topright{display:flex;gap:28px;align-items:center}
+.meadow{grid-column:1!important;grid-row:2!important;min-height:0!important;height:100%!important}
+.cw-grid{position:absolute;inset:0;pointer-events:none;opacity:.85;background-image:linear-gradient(90deg,#000 1px,transparent 1px),linear-gradient(#000 1px,transparent 1px);background-size:10% 16.666%}
+.cw-loc{position:absolute;z-index:1;max-width:100px;padding:6px 10px;border-radius:10px;background:#e8dfd6;color:#222;font-size:10px;text-align:center;line-height:1.25}
+
+.cw-side{grid-column:2;grid-row:2;display:flex;flex-direction:column;gap:8px;min-height:0;overflow-y:auto;padding:5px;background:#2a1c13}
+.cw-chat{flex:1 0 360px;display:flex;flex-direction:column;min-height:0;background:#b9a493;color:#2b2118;border-radius:6px;overflow:hidden}
+.cw-topic{padding:10px 12px;font-size:19px;font-weight:600;border-bottom:1px solid #d6c7b9}
+.cw-msgs{flex:1;min-height:0;overflow-y:auto}
+.cw-row{display:flex;align-items:baseline;gap:8px;padding:6px 10px;border-bottom:1px solid #d0c0b1;font-size:16px}
+.cw-row.trainee{cursor:pointer}
+.cw-row.trainee:hover{background:#c9b8a8}
+.cw-row.chosen{background:#d4c3b3;outline:2px solid #c86d28;outline-offset:-2px}
+.cw-row.done{opacity:.45;cursor:default}
+.cw-t{font-size:12px;color:#5a4a3c}
+.cw-n{font-weight:700}
+.cw-row.me .cw-n{color:#7a3f10}
+.cw-a{margin-left:auto;color:#4a3a2c}
+.cw-form{display:flex;gap:8px;padding:10px;background:#b9a493}
+.cw-form input{flex:1;min-width:0;padding:10px 12px;border:0;border-radius:6px;background:#eadbd0;color:#2b2118;font:inherit;outline:none}
+.cw-form button{padding:0 18px;border:0;border-radius:6px;background:#c86d28;color:#fff;font-weight:700}
+.cw-panel{background:#8f7b6b;border-radius:6px;padding:8px 10px;color:#241a12}
+.cw-panel h3{margin:0 0 8px;font-size:19px}
+.cw-tiles{display:flex;flex-wrap:wrap;gap:6px}
+.cw-tiles span{width:62px;height:62px;display:grid;place-items:center;border-radius:6px;background:#a99585;font-size:30px}
+
+.cw-flash{position:absolute;inset:0;background:#d01c1c;opacity:0;pointer-events:none;z-index:9}
+.cw-win{position:absolute;inset:0;z-index:10;display:grid;place-items:center;padding:20px;text-align:center;pointer-events:none;color:#7dff9a;font-size:clamp(30px,5vw,64px);font-weight:800;text-shadow:0 3px 18px #000}
+.cw-win[hidden]{display:none}
+@keyframes cw-shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+@keyframes cw-red{0%,100%{opacity:0}30%{opacity:.3}}
+.catworld.cw-error{animation:cw-shake .5s ease}
+.catworld.cw-error .cw-flash{animation:cw-red .7s ease}
+
+@media(max-width:700px){
+ .catworld{grid-template-columns:1fr!important;grid-template-rows:auto 38vh auto!important;height:auto!important;overflow:visible}
+ .meadow{grid-column:1!important;grid-row:2!important}
+ .cw-side{grid-column:1;grid-row:3;overflow:visible}
+ .cw-chat{flex-basis:420px}
+}
+</style>
