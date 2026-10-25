@@ -1,107 +1,471 @@
-<!-- ... existing code ... -->
-        /* Цветовая палитра из игры */
-        .bg-cw-header { background-color: #e5cdb8; }
-        .bg-cw-sidebar { background-color: #ba9d88; }
-        .bg-cw-chat-bg { background-color: #bda28d; }
-        .bg-cw-input { background-color: #e3d2c3; }
-        .bg-cw-btn { background-color: #d28842; }
-        .bg-cw-btn:hover { background-color: #b87332; }
-        .border-cw { border-color: #8c715d; }
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Пещерка для тренировок</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
 
-        /* Игровая сетка локации и фоновый арт пещеры */
-        .game-grid {
-            background-color: #170903;
-            background-image: 
-                /* Черная четкая сетка ячеек */
-                linear-gradient(to right, rgba(0, 0, 0, 0.8) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(0, 0, 0, 0.8) 1px, transparent 1px),
-                /* Текстура и освещение пещеры */
-                radial-gradient(ellipse at 50% 60%, rgba(135, 75, 25, 0.6) 0%, rgba(60, 25, 8, 0.85) 50%, rgba(12, 5, 2, 0.98) 90%),
-                radial-gradient(ellipse at 80% 30%, rgba(160, 90, 30, 0.3) 0%, transparent 60%);
-            background-size: 75px 75px, 75px 75px, 100% 100%, 100% 100%;
-        }
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #d1bba7;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
 
-        /* Скалы/камни на заднем фоне пещеры */
-        .cave-rocks {
-            position: absolute;
-            inset: 0;
-            background: 
-                radial-gradient(circle at 15% 45%, rgba(0, 0, 0, 0.92) 0%, rgba(0, 0, 0, 0.6) 18%, transparent 40%),
-                radial-gradient(circle at 85% 75%, rgba(120, 60, 15, 0.35) 0%, transparent 35%),
-                radial-gradient(circle at 10% 85%, rgba(0, 0, 0, 0.95) 0%, transparent 30%);
-            pointer-events: none;
-        }
+    /* Анимация ошибки */
+    body.error-shake {
+      animation: shake 0.4s ease-in-out;
+    }
 
-        /* Стилизация скроллбара чата */
-<!-- ... existing code ... -->
-        .red-overlay.active {
-            opacity: 1;
-        }
+    @keyframes shake {
+      0% { transform: translate(0, 0); }
+      20% { transform: translate(-10px, 0); }
+      40% { transform: translate(10px, 0); }
+      60% { transform: translate(-8px, 0); }
+      80% { transform: translate(8px, 0); }
+      100% { transform: translate(0, 0); }
+    }
 
-        /* Плашки переходов локаций */
-        .location-tag {
-            background: rgba(220, 212, 204, 0.9);
-            border: 1px solid #5a483a;
-            border-radius: 8px;
-            font-size: 11px;
-            padding: 4px 10px;
-            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.6);
-            line-height: 1.15;
-            text-align: center;
-            color: #111;
-            font-weight: 500;
-        }
+    #error-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(255, 0, 0, 0.35);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      z-index: 999;
+    }
 
-        /* Поле ввода слайдер громкости */
-<!-- ... existing code ... -->
-    <!-- ОСНОВНОЙ КОНТЕНТ (Игровая зона + Правая панель) -->
-    <div id="mainContainer" class="flex flex-1 overflow-hidden">
+    #error-overlay.active {
+      opacity: 1;
+    }
 
-        <!-- 2. ЛЕВАЯ ИГРОВАЯ СЕТКА (Пещера) -->
-        <main class="flex-1 game-grid relative overflow-hidden p-4">
-            <div class="cave-rocks"></div>
+    /* Сообщение об успехе */
+    #success-modal {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(20, 60, 20, 0.95);
+      border: 3px solid #2ecc71;
+      color: #2ecc71;
+      padding: 25px 40px;
+      font-size: 28px;
+      font-weight: bold;
+      border-radius: 12px;
+      z-index: 1000;
+      text-align: center;
+      box-shadow: 0 0 30px rgba(46, 204, 113, 0.6);
+      text-shadow: 0 0 10px rgba(46, 204, 113, 0.5);
+    }
 
-            <!-- Метка пещеры сверху слева -->
-            <div class="absolute top-4 left-4 location-tag cursor-pointer hover:bg-white z-10">
-                Пещерка для<br>тренировок<br>№2
-            </div>
+    /* Верхняя панель */
+    header {
+      height: 28px;
+      background-color: #e5cfb9;
+      border-bottom: 1px solid #bba590;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 10px;
+      font-size: 13px;
+      font-weight: bold;
+      color: #000;
+    }
 
-            <!-- Метка пещеры снизу слева -->
-            <div class="absolute bottom-4 left-4 location-tag cursor-pointer hover:bg-white z-10">
-                Пещера<br>будущих
-            </div>
+    .nav-left {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+    }
 
-            <!-- Темный силуэт глаз в левой части пещеры -->
-            <div class="absolute left-10 top-1/3 z-10 pointer-events-none">
-                <div class="relative w-16 h-16">
-                    <!-- Тени норы -->
-                    <div class="absolute inset-0 bg-black/80 rounded-full blur-sm"></div>
-                    <!-- Пара желтоватых светящихся глаз -->
-                    <div class="absolute top-6 left-3 flex gap-2.5 items-center">
-                        <div class="w-2 h-1 bg-yellow-400 rounded-full blur-[0.5px] shadow-[0_0_8px_#f59e0b]"></div>
-                        <div class="w-2 h-1 bg-yellow-400 rounded-full blur-[0.5px] shadow-[0_0_8px_#f59e0b]"></div>
-                    </div>
-                </div>
-            </div>
-        </main>
+    .nav-item {
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
 
-        <!-- 3. ПРАВАЯ ПАНЕЛЬ (ЧАТ, ДЕЙСТВИЯ, ИНВЕНТАРЬ) -->
-<!-- ... existing code ... -->
-        // Список всех игроков и их сообщений
-        const botPlayers = [
-            { name: "Уга", text: "9 бу", group: "group1" },
-            { name: "Муся", text: "76/2000", group: "group2" },
-            { name: "Неясни", text: "678/7к", group: "group2" },
-            { name: "Зонтик", text: "382/500", group: "group3" },
-            { name: "Точка", text: "876/7000", group: "group2" },
-            { name: "Рей", text: "9 бу", group: "group1" },
-            { name: "Фиалка", text: "5/15", group: "group3" },
-            { name: "Ворон", text: "6/150", group: "group3" },
-            { name: "Дарк", text: "4585/7к", group: "group1" },
-            { name: "Пестри", text: "452/500", group: "group3" },
-            { name: "Ори", text: "2445/7000", group: "group1" },
-            { name: "Тенюш", text: "1997/2к", group: "group2" }
-        ];
+    .gear-icon {
+      font-size: 14px;
+    }
 
-        // Ключевые слова для целевых направлений
-<!-- ... existing code ... -->
+    .nav-right {
+      display: flex;
+      gap: 15px;
+    }
+
+    /* Основной контент */
+    main {
+      flex: 1;
+      display: flex;
+      height: calc(100vh - 28px);
+    }
+
+    /* Левая часть - Пещера */
+    .game-viewport {
+      flex: 1;
+      position: relative;
+      background: #1a0b05;
+      overflow: hidden;
+      background-image: 
+        radial-gradient(circle at 50% 60%, #4a2111 0%, #260e05 60%, #0d0401 100%);
+    }
+
+    .cave-art {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    .cave-bg-details {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: 
+        radial-gradient(ellipse at 70% 30%, rgba(139, 69, 19, 0.3) 0%, transparent 50%),
+        radial-gradient(ellipse at 20% 80%, rgba(90, 40, 10, 0.4) 0%, transparent 60%);
+    }
+
+    .eyes {
+      position: absolute;
+      left: 28px;
+      top: 360px;
+      width: 16px;
+      height: 6px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .eye {
+      width: 5px;
+      height: 5px;
+      background: #ffcc00;
+      border-radius: 50%;
+      box-shadow: 0 0 6px #ffea00;
+    }
+
+    .grid-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      grid-template-rows: repeat(8, 1fr);
+      border-collapse: collapse;
+    }
+
+    .grid-cell {
+      border-right: 1px solid rgba(0, 0, 0, 0.45);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.45);
+    }
+
+    .location-tag {
+      position: absolute;
+      background: #ded5c9;
+      border: 1px solid #776a5c;
+      border-radius: 4px;
+      padding: 3px 6px;
+      font-size: 9px;
+      color: #000;
+      text-align: center;
+      line-height: 1.1;
+      box-shadow: 1px 1px 2px rgba(0,0,0,0.4);
+      cursor: pointer;
+    }
+
+    .tag-top-left {
+      top: 110px;
+      left: 3px;
+      width: 58px;
+    }
+
+    .tag-bottom-left {
+      bottom: 15px;
+      left: 3px;
+      width: 58px;
+    }
+
+    /* Правая панель */
+    .sidebar {
+      width: 370px;
+      background-color: #bfa895;
+      border-left: 2px solid #8c7663;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    /* Блок чата */
+    .chat-section {
+      height: 58%;
+      display: flex;
+      flex-direction: column;
+      background-color: #bfa895;
+      padding: 4px;
+      border-bottom: 1px solid #8c7663;
+    }
+
+    .chat-messages {
+      flex: 1;
+      background-color: #bfa895;
+      overflow-y: scroll;
+      padding: 4px 6px;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 13px;
+      color: #222;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .chat-msg {
+      cursor: pointer;
+      line-height: 1.25;
+      word-break: break-all;
+      color: #202020;
+    }
+
+    .chat-msg:hover {
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .chat-msg-bold {
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    /* Поле ввода */
+    .chat-controls {
+      display: flex;
+      gap: 6px;
+      margin-top: 4px;
+      align-items: center;
+    }
+
+    .chat-input {
+      flex: 1;
+      height: 26px;
+      background-color: #dfd0c0;
+      border: 1px solid #9e8976;
+      border-radius: 3px;
+      padding: 0 8px;
+      font-size: 13px;
+      color: #333;
+      outline: none;
+    }
+
+    .chat-input::placeholder {
+      color: #887868;
+    }
+
+    .btn-ok {
+      width: 42px;
+      height: 26px;
+      background: linear-gradient(to bottom, #d27933, #bd5b15);
+      border: 1px solid #8a3e0b;
+      border-radius: 4px;
+      color: #fff;
+      font-size: 11px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .btn-ok:active {
+      background: #a34c0e;
+    }
+
+    .volume-control {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 6px;
+      font-size: 10px;
+      color: #333;
+      margin-top: 4px;
+      padding-right: 2px;
+    }
+
+    .volume-slider {
+      width: 200px;
+      height: 3px;
+      accent-color: #d27933;
+    }
+
+    /* Блок Действия */
+    .actions-section {
+      padding: 6px;
+      border-bottom: 1px solid #8c7663;
+    }
+
+    .section-title {
+      font-size: 13px;
+      font-weight: bold;
+      margin-bottom: 6px;
+      color: #111;
+    }
+
+    .actions-grid {
+      display: flex;
+      gap: 6px;
+    }
+
+    .action-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 5px;
+      border: 1px solid #6e5947;
+      background-size: cover;
+      background-position: center;
+      cursor: pointer;
+    }
+
+    /* Блок Во рту */
+    .inventory-section {
+      flex: 1;
+      padding: 6px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .inventory-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 3px;
+      margin-top: 2px;
+    }
+
+    .inv-slot {
+      aspect-ratio: 1;
+      background-color: rgba(0, 0, 0, 0.05);
+      border: 1px dashed rgba(0, 0, 0, 0.15);
+      border-radius: 3px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .inv-item {
+      width: 85%;
+      height: 85%;
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="error-overlay"></div>
+  <div id="success-modal">ты умница! так держать.</div>
+
+  <!-- Шапка -->
+  <header>
+    <div class="nav-left">
+      <div class="nav-item">Мой кот</div>
+      <div class="nav-item">Чат</div>
+      <div class="nav-item">ЛС</div>
+      <div class="nav-item"><span class="gear-icon">⚙</span></div>
+    </div>
+    <div class="nav-right">
+      <div><b>ТБ:</b> 1000</div>
+      <div><b>Моё местонахождение:</b> Пещерка для тренировок</div>
+    </div>
+  </header>
+
+  <!-- Основная зона -->
+  <main>
+    <!-- Левое игровое поле -->
+    <div class="game-viewport">
+      <div class="cave-bg-details"></div>
+      <div class="eyes">
+        <div class="eye"></div>
+        <div class="eye"></div>
+      </div>
+      
+      <!-- Сетка -->
+      <div class="grid-overlay">
+        <script>
+          for (let i = 0; i < 80; i++) {
+            document.write('<div class="grid-cell"></div>');
+          }
+        </script>
+      </div>
+
+      <!-- Кнопки-таблички -->
+      <div class="location-tag tag-top-left">Пещерка для тренировок №2</div>
+      <div class="location-tag tag-bottom-left">Пещера будущих</div>
+    </div>
+
+    <!-- Правый сайдбар -->
+    <div class="sidebar">
+      <!-- Чат -->
+      <div class="chat-section">
+        <div class="chat-messages" id="chatMessages"></div>
+        
+        <div class="chat-controls">
+          <input type="text" class="chat-input" id="chatInput" placeholder="Сообщение">
+          <button class="btn-ok" id="btnSend">ОК</button>
+        </div>
+        
+        <div class="volume-control">
+          <input type="range" class="volume-slider" min="0" max="100" value="70">
+          <span>(правее — громче)</span>
+        </div>
+      </div>
+
+      <!-- Действия -->
+      <div class="actions-section">
+        <div class="section-title">Действия</div>
+        <div class="actions-grid">
+          <div class="action-icon" style="background-image: url('https://catwar.su/cw3/cats/0.png'), linear-gradient(#b05f3c, #803d21);"></div>
+          <div class="action-icon" style="background-image: url('https://catwar.su/cw3/cats/1.png'), linear-gradient(#b05f3c, #803d21);"></div>
+          <div class="action-icon" style="background-image: url('https://catwar.su/cw3/cats/2.png'), linear-gradient(#b05f3c, #803d21);"></div>
+          <div class="action-icon" style="background-image: url('https://catwar.su/cw3/cats/3.png'), linear-gradient(#b05f3c, #803d21);"></div>
+        </div>
+      </div>
+
+      <!-- Во рту -->
+      <div class="inventory-section">
+        <div class="section-title">Во рту</div>
+        <div class="inventory-grid" id="inventoryGrid">
+          <script>
+            for (let i = 0; i < 21; i++) {
+              document.write('<div class="inv-slot"><div class="inv-item" style="background-image: url(\'https://catwar.su/cw3/items/1.png\'); opacity: ' + (i < 12 ? '0.8' : '0.3') + ';"></div></div>');
+            }
+          </script>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Список всех игроков и их целевых групп
+    const PLAYERS_DATA = [
+      { name: "Уга", text: "9", group: ["шепот звезд", "состязаньице"] },
+      { name: "Рей", text: "9", group: ["шепот звезд", "состязаньице"] },
+      { name: "Дарк", text: "4585/7к", group: ["шепот звезд", "состязаньице"] },
+      { name: "Ори", text: "2445/7000", group: ["шепот звезд", "состязаньице"] },
+
+      { name: "Точка", text: "876/7000", group: ["цветок фиалки", "пузырёчек", "пузыречек"] },
+      { name: "Неясни", text: "678/7к", group: ["цветок фиалки", "пузырёчек", "пузыречек"] },
+      { name: "Тенюш", text: "1997/2к", group: ["цветок фиалки", "пузырёчек", "пузыречек"] },
+      { name: "Муся", text: "
