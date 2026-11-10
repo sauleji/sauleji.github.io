@@ -168,6 +168,8 @@
     .k-exit{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:#3a1f1f;color:#ffb3a8;border:1px solid #5a2a2a;border-radius:8px;padding:4px 12px;font-size:13px;cursor:pointer}
     .k-exit:hover{background:#5a2a2a;color:#fff}
     .k-exit[hidden]{display:none}
+    option.k-used{color:#8a8a8a}
+    .k-panel option.k-used{color:#9a8878}
     .vk-message.k-sys,.cw-row.k-sys{opacity:.55;font-style:italic}
     .vk-message.k-sys .vk-message-name{color:#aaa}
     .vk-message.k-sys .vk-person{background:#444}
@@ -305,7 +307,7 @@
     const TRAINERS = ['Камнепад','Тихий Ручей','Лунный Отблеск','Горный Ветер','Сереброкап','Быстроток','Мшистый Камень','Звездопад','Туманчик','Орлиное Крыло','Холодная Вода','Скалолап','Речная Искра','Сумрачный Утёс'];
     const TRAINEES = ['Уга','Неясни','Ыса','Фиалка','Ворон','Тенюш','Зонтик','Муся','Орри','Дарк','Пестри','Точка','Рей'];
     let MY = 'Гость';
-    const player = {name: '', id: '', difficulty: '', start: 0, convoErrors: 0, gameErrors: 0};
+    const player = {name: '', id: '', difficulty: '', start: 0, convoErrors: 0, gameErrors: 0, convoLog: [], gameLog: []};
 
     // ===== Регистрация =====
     const regForm = document.getElementById('regForm');
@@ -360,7 +362,9 @@
       const data = {
         name: player.name, id: player.id, difficulty: player.difficulty,
         convoErrors: player.convoErrors, gameErrors: player.gameErrors,
-        seconds: sec, time: formatTime(sec)
+        seconds: sec, time: formatTime(sec),
+        // подробности ошибок — по строке на ошибку
+        convoLog: player.convoLog.join('\n'), gameLog: player.gameLog.join('\n')
       };
       if (!/^https:\/\//.test(RESULTS_URL)) { console.warn('RESULTS_URL не задан', data); return; }
       fetch(RESULTS_URL, {method: 'POST', mode: 'no-cors', headers: {'Content-Type': 'text/plain;charset=utf-8'}, body: JSON.stringify(data)})
@@ -428,8 +432,9 @@
       document.getElementById('diffBadge').textContent = player.name + ' · ' + L.label;
       player.difficulty = L.label;
       player.start = Date.now();
+      player.convoErrors = 0; player.gameErrors = 0; player.convoLog = []; player.gameLog = [];
       initConversation(trainers, PAIRS, N);
-      initGame(TASKS, PAIRS, trainers.map(t => t.name));
+      initGame(TASKS, PAIRS, trainers.map(t => t.name), Object.fromEntries(trainers.map(t => [t.name, t.val])));
     }
 
     // ===== Беседа =====
@@ -477,8 +482,10 @@
       document.getElementById('vkClear').addEventListener('click', () => { picked = []; render(); });
       text.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); form.requestSubmit(); } });
 
-      function fail() {
+      const who = n => { const t = trainers.find(x => x.name === n); return t ? n + ' (' + t.val + ')' : n; };
+      function fail(why) {
         player.convoErrors++;
+        player.convoLog.push(player.convoErrors + '. ' + why);
         document.body.classList.remove('vk-error'); void document.body.offsetWidth;
         document.body.classList.add('vk-error');
         setTimeout(() => document.body.classList.remove('vk-error'), 1000);
@@ -492,12 +499,19 @@
         const low = norm(body);
         const names = trainers.map(t => t.name).filter(n => low.includes(norm(n)));
         picked = []; render();
-        if (names.length !== 2 || names.some(n => paired.has(n))) { fail(); return; }
+        const oneLine = body.replace(/\s*\n\s*/g, ' / ');
+        if (names.length !== 2) { fail('«' + oneLine + '» — в сообщении должно быть ровно 2 тренера'); return; }
+        const already = names.filter(n => paired.has(n));
+        if (already.length) { fail('«' + oneLine + '» — ' + already.map(who).join(' и ') + ' уже в паре'); return; }
         const two = names.map(n => trainers.find(t => t.name === n));
         const bg = two.find(t => t.role === 'bg'), mg = two.find(t => t.role === 'mg');
-        if (!bg || !mg) { fail(); return; }
+        if (!bg || !mg) { fail(names.map(who).join(' + ') + ' — оба ' + (bg ? 'БГ' : 'МГ') + ', нужна пара БГ + МГ'); return; }
         const i = trainers.findIndex((t, k) => k < N && !PAIRS[k] && t.val === bg.val && trainers[N + k].val === mg.val);
-        if (i < 0) { fail(); return; }
+        if (i < 0) {
+          const right = [...new Set(trainers.slice(0, N).map((t, k) => k).filter(k => !PAIRS[k] && trainers[k].val === bg.val).map(k => trainers[N + k].val))];
+          fail('БГ ' + who(bg.name) + ' + МГ ' + who(mg.name) + ' — неверная пара' + (right.length ? '; к этому БГ нужен МГ ' + right.join(' или ') : ''));
+          return;
+        }
         PAIRS[i] = [bg.name, mg.name];
         order.push(PAIRS[i]);
         paired.add(bg.name); paired.add(mg.name);
@@ -603,7 +617,7 @@
     })();
 
     // ===== Игровая =====
-    function initGame(TASKS, PAIRS, allTrainers) {
+    function initGame(TASKS, PAIRS, allTrainers, trainerInfo) {
       const game  = document.querySelector('.catworld');
       const list  = document.getElementById('messages');
       const form  = document.getElementById('chatForm');
@@ -655,8 +669,13 @@
         }, 2000);
       }
 
-      function fail(bad) {
+      const tWho = n => { const t = trainerInfo[n]; return t ? n + ' (' + t + ')' : n; };
+      const pairText = k => PAIRS[k] ? PAIRS[k].map(tWho).join(' и ') : '?';
+      function fail(bad, named) {
         player.gameErrors += bad.length;
+        bad.forEach(t => player.gameLog.push((player.gameLog.length + 1) + '. ' + t.name + ' (' + t.text + ') → ' +
+          (named.length === 2 ? named.map(tWho).join(' и ') : 'не указаны 2 тренера пары') +
+          ' — нужно к: ' + t.pairs.concat(t.alts).map(pairText).join(' или ')));
         game.classList.remove('cw-error'); void game.offsetWidth; game.classList.add('cw-error');
         setTimeout(() => game.classList.remove('cw-error'), 750);
         selected = bad[0];
@@ -707,7 +726,7 @@
         const ok = t => g >= 0 && (t.pairs.includes(g) || t.alts.includes(g));
         ts.filter(ok).forEach(success);
         const bad = ts.filter(t => !ok(t));
-        if (bad.length) fail(bad);
+        if (bad.length) fail(bad, named);
       });
 
       setTopic();
@@ -1039,10 +1058,15 @@
 
       // --- состояние ---
       let S = {};
-      const pairedNames = () => new Set(vals(S.pairs).flat());
-      const convoTrainers = () => vals(S.convo).filter(m => m.who === 'k').map(m => m.name);
-      const gameTrainees = () => vals(S.game).filter(m => m.who === 'k').map(m => m.name);
-      const openTrainees = () => gameTrainees().filter(n => !(S.done && S.done[n]));
+      // «закрытыми» (полупрозрачными) становятся только те сообщения, что были на момент ✅;
+      // новые сообщения от того же имени — снова обычные
+      const kMsgs = data => Object.keys(data || {}).filter(id => data[id].who === 'k');
+      const isPairedMsg = id => !!(S.pairedIds && S.pairedIds[id]);
+      const isDoneMsg = id => !!(S.doneIds && S.doneIds[id]);
+      const convoTrainers = () => [...new Set(kMsgs(S.convo).map(id => S.convo[id].name))];
+      const openTrainers = () => [...new Set(kMsgs(S.convo).filter(id => !isPairedMsg(id)).map(id => S.convo[id].name))];
+      const gameTrainees = () => [...new Set(kMsgs(S.game).map(id => S.game[id].name))];
+      const openTrainees = () => [...new Set(kMsgs(S.game).filter(id => !isDoneMsg(id)).map(id => S.game[id].name))];
 
       // ИСник: выбор БГ/МГ в беседе
       let picked = [];
@@ -1103,15 +1127,19 @@
         const m = S.convo && S.convo[id]; if (!m || m.st) return;
         room.set('convo/' + id + '/st', v);
         if (v !== 'ok') return;
-        const low = norm(m.text), paired = pairedNames();
-        const found = [...new Set(convoTrainers())].filter(n => low.includes(norm(n)) && !paired.has(n))
+        const low = norm(m.text);
+        const found = openTrainers().filter(n => low.includes(norm(n)))
           .sort((a, b) => low.indexOf(norm(a)) - low.indexOf(norm(b)));
-        if (found.length === 2) room.push('pairs', found);
+        if (found.length !== 2) return;
+        room.push('pairs', found);
+        kMsgs(S.convo).forEach(mid => { if (found.includes(S.convo[mid].name) && !isPairedMsg(mid)) room.set('pairedIds/' + mid, true); });
       }
       function judgeGame(id, v) {
         const m = S.game && S.game[id]; if (!m || m.st) return;
         room.set('game/' + id + '/st', v);
-        if (v === 'ok') leadNames(m.text, openTrainees()).names.forEach(n => room.set('done/' + n, true));
+        if (v !== 'ok') return;
+        const names = leadNames(m.text, openTrainees()).names;
+        kMsgs(S.game).forEach(mid => { if (names.includes(S.game[mid].name) && !isDoneMsg(mid)) room.set('doneIds/' + mid, true); });
       }
 
       function judgeBox() {
@@ -1146,7 +1174,7 @@
       }
       function updVk(x, m) {
         if (m.who === 's') return;
-        if (m.who === 'k') { x.classList.toggle('paired', pairedNames().has(m.name)); return; }
+        if (m.who === 'k') { x.classList.toggle('paired', isPairedMsg(x.dataset.id)); return; }
         x.querySelector('.k-mark').textContent = m.st === 'ok' ? ' ✅' : m.st === 'bad' ? ' ❌' : '';
         const j = x.querySelector('.k-judge'); if (j) j.hidden = !!m.st;
       }
@@ -1162,7 +1190,7 @@
       function updRow(row, m) {
         if (m.who === 's') return;
         if (m.who === 'k') {
-          const d = !!(S.done && S.done[m.name]);
+          const d = isDoneMsg(row.dataset.id);
           row.classList.toggle('done', d); row.querySelector('.cw-a').textContent = d ? '✓' : '→';
           return;
         }
@@ -1217,7 +1245,7 @@
 
         // беседа
         sync(vkList, S.convo, convoEls, buildVk, updVk);
-        picked = picked.filter(n => !pairedNames().has(n));
+        picked = picked.filter(n => openTrainers().includes(n));
         if (K) {
           // списки имён: можно писать от одного и того же сколько угодно раз
           if (!tSel.options.length) {
@@ -1226,6 +1254,10 @@
               names.forEach(n => { const o = mk('option', '', n); o.value = n; sel.appendChild(o); });
             });
           }
+          // уже использованные имена — блёклые, но выбрать можно снова
+          const usedT = new Set(convoTrainers()), usedS = new Set(gameTrainees());
+          [...tSel.options].forEach(o => o.classList.toggle('k-used', usedT.has(o.value)));
+          [...sSel.options].forEach(o => o.classList.toggle('k-used', usedS.has(o.value)));
           sayBtns.forEach(b => b.classList.toggle('on', b.textContent === (S.say || '')));
         }
 
@@ -1236,7 +1268,7 @@
         // игровая
         sync(gList, S.game, gameEls, buildRow, updRow);
         if (I) refreshChosen();
-        const total = gameTrainees().length, doneN = gameTrainees().filter(n => S.done && S.done[n]).length;
+        const total = gameTrainees().length, doneN = new Set(kMsgs(S.game).filter(isDoneMsg).map(id => S.game[id].name)).size;
         topic.textContent = K ? 'Ты куратор: пиши дроби от лица тренирующихся · расставлено ' + doneN + '/' + total
           : I ? 'Расставлено: ' + doneN + '/' + total + ' — нажимай на тренирующихся'
           : 'Ты наблюдаешь · расставлено ' + doneN + '/' + total;
