@@ -192,28 +192,6 @@
   </style>
 </head>
 <body>
-  <div class="gate" id="gate"><div class="gate-box">🔒<br>Сюда можно попасть только по приглашению.<br><span>Попроси ссылку у организатора.</span></div></div>
-  <script>
-  // ===== Вход только по ссылке-приглашению =====
-  // Ссылка: адрес сайта + ?k=КЛЮЧ. Здесь хранится не сам ключ, а его отпечаток (SHA-256).
-  (async () => {
-    const KEY_HASH = '0e4cf6511d7394c36ffb6f7123cd69124878266206890d406175d76d6c16697c';
-    const OK_KEY = 'trainingAccess';
-    const others = () => [...document.body.children].filter(el => el.id !== 'gate');
-    const lock = on => others().forEach(el => { el.inert = on; });
-    let ok = false;
-    try { ok = localStorage.getItem(OK_KEY) === KEY_HASH; } catch (e) {}
-    const k = new URLSearchParams(location.search).get('k');
-    if (!ok && k && window.crypto && crypto.subtle) {
-      const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(k));
-      const hex = [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
-      if (hex === KEY_HASH) { ok = true; try { localStorage.setItem(OK_KEY, KEY_HASH); } catch (e) {} }
-    }
-    if (k) { const sp = new URLSearchParams(location.search).get('s'); history.replaceState(null, '', location.pathname + (sp ? '?s=' + encodeURIComponent(sp) : '')); } // убираем ключ из адресной строки (код сессии оставляем)
-    if (ok) { document.getElementById('gate').remove(); lock(false); }
-    else { if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => lock(true)); else lock(true); }
-  })();
-  </script>
 
   <div class="diff-modal" id="regModal">
     <form class="diff-box reg-box" id="regForm">
