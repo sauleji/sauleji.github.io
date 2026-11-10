@@ -164,7 +164,11 @@
     .k-panel select,.k-panel input{min-width:0;flex:1;padding:8px 10px;border:0;border-radius:6px;background:#eadbd0;color:#2b2118;font:inherit;outline:none}
     .k-btn{padding:8px 12px;border:0;border-radius:6px;background:#c86d28;color:#fff;font-weight:700;cursor:pointer;white-space:nowrap}
     .k-btn:hover{background:#e08b4d}
-    .k-btn.k-fin{background:#5e4a3a;margin-top:4px}
+    .k-btn.k-clr{background:#5e4a3a}
+    .k-finbox{margin-top:auto;padding-top:14px;display:flex;justify-content:flex-end}
+    .k-fin{border:0;border-radius:6px;padding:6px 12px;background:#3a2a1f;color:#b8a493;font:inherit;font-size:13px;cursor:pointer}
+    .k-fin:hover{color:#fff}
+    .k-fin.armed{background:#a8321f;color:#fff}
     .k-says{display:flex;flex-wrap:wrap;gap:6px}
     .k-says button{background:#a99585;color:#241a12;border:0;border-radius:6px;padding:6px 10px;cursor:pointer;font:inherit;font-size:14px}
     .k-says button.on{background:#c86d28;color:#fff}
@@ -176,6 +180,7 @@
     .cw-arrow{position:absolute;left:50%;top:50%;width:42px;height:4px;margin-top:-2px;background:#659a4e;box-shadow:0 0 1px #000a;transform-origin:0 50%;transform:rotate(237deg)}
     .cw-kurator{z-index:4;transition:left .25s,top .25s}
     .cw-say{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);margin-bottom:-14px;max-width:260px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:#e8dfd6;color:#222;font-size:20px;font-weight:600;padding:4px 12px;border-radius:12px;box-shadow:0 2px 8px #0009}
+    .cw-say[hidden]{display:none}
     .cw-kurator.top .cw-say{bottom:auto;top:100%;margin:-14px 0 0}
 
     /* ===== Блокнотик в игровой ===== */
@@ -755,7 +760,8 @@
           push: (path, val) => ref.child(path).push(val),
           claim: (role, data) => ref.child('roles/' + role)
             .transaction(cur => (!cur || cur.uid === data.uid) ? data : undefined)
-            .then(r => { if (r.committed) ref.child('roles/' + role).onDisconnect().remove(); return r.committed; }),
+            .then(r => r.committed),
+          remove: () => ref.remove(),
           listen: cb => ref.on('value', s => cb(s.val() || {}))
         };
       }
@@ -776,9 +782,9 @@
           const o = read() || {}; const cur = getPath(o, 'roles/' + role);
           if (cur && cur.uid !== data.uid) return false;
           setPath(o, 'roles/' + role, data); write(o);
-          window.addEventListener('pagehide', () => { const x = read() || {}; if (getPath(x, 'roles/' + role + '/uid') === data.uid) { setPath(x, 'roles/' + role, null); write(x); } });
           return true;
         },
+        remove: async () => { try { localStorage.removeItem(key); } catch (e) {} if (bc) bc.postMessage(1); fire(); },
         listen: cb => { subs.push(cb); cb(read() || {}); }
       };
     }
@@ -961,11 +967,27 @@
         const setOwn = () => { const v = own.value.trim(); if (v) { room.set('say', v); own.value = ''; } };
         ownBtn.addEventListener('click', setOwn);
         own.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); setOwn(); } });
-        r2.append(own, ownBtn);
-        const fin = mk('button', 'k-btn k-fin', 'Завершить тренировку'); fin.type = 'button';
-        fin.addEventListener('click', () => room.set('phase', 'done'));
-        panel.append(says, r2, fin);
+        const clr = mk('button', 'k-btn k-clr', 'Убрать'); clr.type = 'button'; clr.title = 'Убрать надпись с поля';
+        clr.addEventListener('click', () => room.set('say', ''));
+        r2.append(own, ownBtn, clr);
+        panel.append(says, r2);
         document.querySelector('.cw-chat').after(panel);
+        // «Завершить тренировку» — в самом низу, с подтверждением вторым нажатием
+        const finBox = mk('section', 'k-finbox');
+        const fin = mk('button', 'k-fin', 'Завершить тренировку'); fin.type = 'button';
+        let armed = null;
+        fin.addEventListener('click', () => {
+          if (!armed) {
+            fin.textContent = 'Точно завершить? Нажми ещё раз'; fin.classList.add('armed');
+            armed = setTimeout(() => { armed = null; fin.textContent = 'Завершить тренировку'; fin.classList.remove('armed'); }, 3000);
+            return;
+          }
+          clearTimeout(armed); fin.disabled = true;
+          room.set('phase', 'done');
+          setTimeout(() => room.remove(), 2000); // надпись висит 2 секунды, потом сессия закрывается
+        });
+        finBox.appendChild(fin);
+        document.querySelector('.cw-side').appendChild(finBox);
         const sendS = () => {
           const v = sVal.value.trim(); if (!v || !sSel.value) return;
           room.push('game', {who: 'k', name: sSel.value, text: v, t: clock()});
@@ -980,7 +1002,7 @@
           const x = (e.clientX - r.left) / r.width * 1000, y = (e.clientY - r.top) / r.height * 1000;
           const c = Math.min(10, Math.max(1, Math.floor(x / CELL_W) + 1)), rw = Math.min(6, Math.max(1, Math.floor(y / CELL_H) + 1));
           room.set('kpos', {c, r: rw});
-          if (!S.say) room.set('say', DEFAULT_SAY);
+          if (S.say == null) room.set('say', DEFAULT_SAY);
         });
       }
 
@@ -1119,8 +1141,17 @@
       const seenBad = new Set(); let firstPaint = true, lastPhase = null, lastCats = '', lastPairs = '';
       let kurCat = null;
 
+      let hadMeta = false, closing = false;
+      function sessionClosed() {
+        if (closing) return; closing = true;
+        ss.set('kSession', null);
+        try { history.replaceState(null, '', location.pathname); } catch (e) {}
+        location.reload();
+      }
       return function apply(st) {
         S = st || {};
+        if (S.meta) hadMeta = true;
+        else { if (hadMeta || !firstPaint) sessionClosed(); return; }
         // моя роль на месте? (после обрыва связи — занимаем снова)
         const me = getPath(S, 'roles/' + role);
         if (!me || me.uid !== myUid) { if (!me) room.claim(role, {name: player.name, uid: myUid}); }
@@ -1161,7 +1192,7 @@
         if (I) refreshChosen();
         const total = gameTrainees().length, doneN = gameTrainees().filter(n => S.done && S.done[n]).length;
         topic.textContent = K ? 'Ты куратор: пиши дроби от лица тренирующихся · расставлено ' + doneN + '/' + total
-          : I ? 'Расставлено: ' + doneN + '/' + total + ' — нажимай на тренирующихся и пиши имена ДГ'
+          : I ? 'Расставлено: ' + doneN + '/' + total + ' — нажимай на тренирующихся'
           : 'Ты наблюдаешь · расставлено ' + doneN + '/' + total;
 
         // ошибки → красный экран у ИСника и наблюдателей
@@ -1193,7 +1224,9 @@
           }
           moveCat(kurCat, S.kpos.c, S.kpos.r);
           kurCat.classList.toggle('top', S.kpos.r === 1);
-          kurCat.querySelector('.cw-say').textContent = S.say || DEFAULT_SAY;
+          const say = kurCat.querySelector('.cw-say');
+          say.textContent = S.say == null ? DEFAULT_SAY : S.say;
+          say.hidden = S.say === '';
         }
         firstPaint = false;
       };
