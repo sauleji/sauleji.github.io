@@ -168,6 +168,10 @@
     .k-exit{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:#3a1f1f;color:#ffb3a8;border:1px solid #5a2a2a;border-radius:8px;padding:4px 12px;font-size:13px;cursor:pointer}
     .k-exit:hover{background:#5a2a2a;color:#fff}
     .k-exit[hidden]{display:none}
+    .vk-message.k-sys,.cw-row.k-sys{opacity:.55;font-style:italic}
+    .vk-message.k-sys .vk-message-name{color:#aaa}
+    .vk-message.k-sys .vk-person{background:#444}
+    .cw-row.k-sys{cursor:default}
     .k-finbox{margin-top:auto;padding-top:14px;display:flex;justify-content:flex-end}
     .k-fin{border:0;border-radius:6px;padding:6px 12px;background:#3a2a1f;color:#b8a493;font:inherit;font-size:13px;cursor:pointer}
     .k-fin:hover{color:#fff}
@@ -852,7 +856,8 @@
       sesBusy(true);
       try {
         const room = await openRoom(code);
-        const st = await room.get();
+        let st = await room.get();
+        if (!st || !st.meta) { await new Promise(r => setTimeout(r, 800)); st = await room.get(); } // вторая попытка
         if (!st || !st.meta) {
           sesErr.textContent = room.online ? 'Сессия с таким кодом не найдена' : 'Сессия не найдена (без Firebase сессии видны только в этом браузере)';
         } else chooseRole(code, room);
@@ -916,7 +921,8 @@
       // --- Беседа ---
       const vkList = el('vkMessages'), vkForm = el('vkForm'), vkText = el('vkText');
       vkList.innerHTML = '';
-      vkForm.hidden = !I; if (!I) vkForm.style.display = 'none';
+      if (!I && !K) vkForm.style.display = 'none';
+      if (K) vkText.placeholder = 'Отправить сообщение от имени системы';
       const aside = document.querySelector('.conversation-instructions');
       aside.innerHTML = ''; aside.classList.add('k-aside');
       const codeBox = mk('div', 'k-code');
@@ -937,10 +943,10 @@
       let tSel, tVal;
       if (K) {
         aside.appendChild(mk('div', 'k-h', 'Написать от лица тренера'));
-        tSel = mk('select', 'k-dsel'); tVal = mk('input', 'k-din'); tVal.placeholder = 'Дробь, например 5009/7к';
+        tSel = mk('select', 'k-dsel'); tVal = mk('input', 'k-din'); tVal.placeholder = '';
         const tSend = mk('button', 'k-dbtn k-main', 'Отправить'); tSend.type = 'button';
         const toGame = mk('button', 'k-dbtn k-go', 'Перейти в игровую ▶'); toGame.type = 'button';
-        aside.append(tSel, tVal, tSend, mk('div', 'k-note', 'Ответы ИСника отмечай ✅ или ❌ прямо в чате. Когда пары готовы — переводи в игровую.'), toGame);
+        aside.append(tSel, tVal, tSend, mk('div', 'k-note', 'Внизу чата можно писать самому — сообщения уйдут от «Системы».'), mk('div', 'k-note', 'Ответы ИСника отмечай ✅ или ❌ прямо в чате. Когда пары готовы — переводи в игровую.'), toGame);
         const sendT = () => {
           const v = tVal.value.trim(); if (!v || !tSel.value) return;
           room.push('convo', {who: 'k', name: tSel.value, text: v, t: clock()});
@@ -965,7 +971,8 @@
       const game = document.querySelector('.catworld');
       const gList = el('messages'), gForm = el('chatForm'), gInput = el('chatInput'), topic = el('topic');
       gList.innerHTML = '';
-      if (!I) gForm.style.display = 'none';
+      if (!I && !K) gForm.style.display = 'none';
+      if (K) gInput.placeholder = 'Отправить сообщение от имени системы';
       const flash = mk('div', 'cw-flash'), win = mk('div', 'cw-win', 'Тренировка завершена! Ты умница! Так держать!'); win.hidden = true;
       game.append(flash, win);
 
@@ -974,7 +981,7 @@
         const panel = mk('section', 'cw-panel k-panel');
         panel.appendChild(mk('h3', '', 'Панель куратора'));
         const r1 = mk('div', 'k-row');
-        sSel = mk('select'); sVal = mk('input'); sVal.placeholder = 'Дробь';
+        sSel = mk('select'); sVal = mk('input'); sVal.placeholder = '';
         const sSend = mk('button', 'k-btn', 'Отправить'); sSend.type = 'button';
         r1.append(sSel, sVal, sSend);
         panel.append(mk('div', 'k-sub', 'От лица тренирующегося:'), r1);
@@ -1060,6 +1067,14 @@
         });
         gInput.addEventListener('input', () => refreshChosen());
       }
+      if (K) {
+        // куратор пишет в чат сам — от имени «Система»
+        const sys = (where, text) => room.push(where, {who: 's', name: 'Система', text, t: clock()});
+        el('vkClear').addEventListener('click', () => { vkText.value = ''; vkText.focus(); });
+        vkText.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); vkForm.requestSubmit(); } });
+        vkForm.addEventListener('submit', e => { e.preventDefault(); const v = vkText.value.trim(); if (!v) return; sys('convo', v); vkText.value = ''; });
+        gForm.addEventListener('submit', e => { e.preventDefault(); const v = gInput.value.trim(); if (!v) return; sys('game', v); gInput.value = ''; });
+      }
       vkList.addEventListener('click', e => {
         const j = e.target.closest('[data-judge]');
         if (j && K) { judgeConvo(j.closest('.vk-message').dataset.id, j.dataset.judge); return; }
@@ -1116,10 +1131,10 @@
       }
       const convoEls = new Map(), gameEls = new Map();
       function buildVk(id, m) {
-        const x = mk('div', 'vk-message' + (m.who === 'k' ? ' pick' : ' mine'));
+        const x = mk('div', 'vk-message' + (m.who === 'k' ? ' pick' : m.who === 's' ? ' k-sys' : ' mine'));
         x.innerHTML = '<div class="vk-person"></div><div><div class="vk-message-name"></div><div class="vk-message-text"></div></div><div class="vk-time"></div>';
-        x.querySelector('.vk-person').textContent = (m.who === 'k' ? m.name[0].toLowerCase() : (m.name || 'И')[0]);
-        x.querySelector('.vk-message-name').textContent = m.who === 'k' ? m.name : m.name + ' (ИСник)';
+        x.querySelector('.vk-person').textContent = (m.who === 'k' ? m.name[0].toLowerCase() : m.who === 's' ? '⚙' : (m.name || 'И')[0]);
+        x.querySelector('.vk-message-name').textContent = m.who === 'i' ? m.name + ' (ИСник)' : m.name;
         x.querySelector('.vk-message-text').textContent = m.text;
         x.querySelector('.vk-time').textContent = m.t || '';
         x.dataset.name = m.name;
@@ -1130,19 +1145,22 @@
         return x;
       }
       function updVk(x, m) {
+        if (m.who === 's') return;
         if (m.who === 'k') { x.classList.toggle('paired', pairedNames().has(m.name)); return; }
         x.querySelector('.k-mark').textContent = m.st === 'ok' ? ' ✅' : m.st === 'bad' ? ' ❌' : '';
         const j = x.querySelector('.k-judge'); if (j) j.hidden = !!m.st;
       }
       function buildRow(id, m) {
-        const row = mk('div', 'cw-row' + (m.who === 'k' ? ' trainee' : ' me'));
+        const row = mk('div', 'cw-row' + (m.who === 'k' ? ' trainee' : m.who === 's' ? ' k-sys' : ' me'));
         row.dataset.name = m.name;
         [['cw-t', '[' + (m.t || '') + ']'], ['cw-x', m.text], ['cw-d', '—'], ['cw-n', m.name]].forEach(([c, t]) => row.appendChild(mk('span', c, t)));
         if (m.who === 'k') row.appendChild(mk('span', 'cw-a', '→'));
+        else if (m.who === 's') {}
         else { row.appendChild(mk('span', 'cw-a k-mark')); if (K) row.querySelector('.cw-a').appendChild(judgeBox()); }
         return row;
       }
       function updRow(row, m) {
+        if (m.who === 's') return;
         if (m.who === 'k') {
           const d = !!(S.done && S.done[m.name]);
           row.classList.toggle('done', d); row.querySelector('.cw-a').textContent = d ? '✓' : '→';
@@ -1201,18 +1219,13 @@
         sync(vkList, S.convo, convoEls, buildVk, updVk);
         picked = picked.filter(n => !pairedNames().has(n));
         if (K) {
-          const used = new Set(convoTrainers());
-          const cur = tSel.value;
-          tSel.innerHTML = '';
-          shuffleOnce.t = shuffleOnce.t || shuffle(TRAINERS);
-          shuffleOnce.t.filter(n => !used.has(n)).forEach(n => { const o = mk('option', '', n); o.value = n; tSel.appendChild(o); });
-          if ([...tSel.options].some(o => o.value === cur)) tSel.value = cur;
-          const usedS = new Set(gameTrainees());
-          const curS = sSel.value;
-          sSel.innerHTML = '';
-          shuffleOnce.s = shuffleOnce.s || shuffle(TRAINEES);
-          shuffleOnce.s.filter(n => !usedS.has(n)).forEach(n => { const o = mk('option', '', n); o.value = n; sSel.appendChild(o); });
-          if ([...sSel.options].some(o => o.value === curS)) sSel.value = curS;
+          // списки имён: можно писать от одного и того же сколько угодно раз
+          if (!tSel.options.length) {
+            shuffleOnce.t = shuffle(TRAINERS); shuffleOnce.s = shuffle(TRAINEES);
+            [[tSel, shuffleOnce.t], [sSel, shuffleOnce.s]].forEach(([sel, names]) => {
+              names.forEach(n => { const o = mk('option', '', n); o.value = n; sel.appendChild(o); });
+            });
+          }
           sayBtns.forEach(b => b.classList.toggle('on', b.textContent === (S.say || '')));
         }
 
