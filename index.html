@@ -133,6 +133,51 @@
     .main-tabs{position:relative}
     .diff-badge{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#777;font-size:13px}
 
+    /* ===== Тренировка с куратором ===== */
+    .diff-box .k-mode{border-color:#c86d28}
+    .diff-box button:disabled{opacity:.45;cursor:not-allowed}
+    .ses-join{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+    .role-btns{display:flex;flex-direction:column;gap:10px}
+    #roleCode b{color:#fff;font-size:18px;letter-spacing:2px}
+    .k-aside{font-size:16px!important;justify-content:flex-start!important;gap:10px;line-height:1.4!important;overflow:auto}
+    .k-code{font-size:16px;color:#aaa}.k-code b{color:#fff;font-size:28px;letter-spacing:4px;margin-left:6px}
+    .k-link{display:flex;gap:8px}.k-link input{flex:1;min-width:0}
+    .k-aside input,.k-aside select{background:#2d2d2d;border:1px solid #3c3c3c;border-radius:10px;padding:10px 12px;color:#f1f1f1;font:inherit;font-size:15px;outline:none}
+    .k-aside input:focus,.k-aside select:focus{border-color:#4c9ce8}
+    .k-dbtn{background:#2d2d2d;color:#f1f1f1;border:1px solid #3c3c3c;border-radius:10px;padding:10px 14px;cursor:pointer;font:inherit;font-size:15px;white-space:nowrap}
+    .k-dbtn:hover{border-color:#4c9ce8}
+    .k-dbtn.k-main{background:#4c9ce8;border-color:#4c9ce8;font-weight:bold}
+    .k-dbtn.k-go{background:#1f9d48;border-color:#1f9d48;font-weight:bold;margin-top:6px}
+    .k-roles{display:flex;flex-direction:column;gap:2px;font-size:14px;color:#ddd;background:#151515;border-radius:10px;padding:10px 12px}
+    .k-roles .k-free{color:#666}
+    .k-h{font-weight:bold;margin-top:8px}.k-note,.k-warn{font-size:13px;color:#999}.k-warn{color:#e0a64c}
+    .k-text{font-size:20px;line-height:1.5;margin-top:10px}
+    .k-judge{display:inline-flex;gap:6px;margin-top:6px}
+    .k-judge[hidden]{display:none}
+    .k-judge button{border:1px solid #3c3c3c;background:#2d2d2d;border-radius:8px;padding:3px 10px;cursor:pointer;font-size:15px}
+    .k-judge button:hover{border-color:#4c9ce8}
+    .cw-row .k-judge{margin:0}.cw-row .k-judge button{background:#d8c8b9;border-color:#a8917f}
+    .k-panel{display:flex;flex-direction:column;gap:8px}
+    .k-panel h3{margin:0}
+    .k-sub{font-size:13px;color:#3a2a1c}
+    .k-row{display:flex;gap:6px}
+    .k-panel select,.k-panel input{min-width:0;flex:1;padding:8px 10px;border:0;border-radius:6px;background:#eadbd0;color:#2b2118;font:inherit;outline:none}
+    .k-btn{padding:8px 12px;border:0;border-radius:6px;background:#c86d28;color:#fff;font-weight:700;cursor:pointer;white-space:nowrap}
+    .k-btn:hover{background:#e08b4d}
+    .k-btn.k-fin{background:#5e4a3a;margin-top:4px}
+    .k-says{display:flex;flex-wrap:wrap;gap:6px}
+    .k-says button{background:#a99585;color:#241a12;border:0;border-radius:6px;padding:6px 10px;cursor:pointer;font:inherit;font-size:14px}
+    .k-says button.on{background:#c86d28;color:#fff}
+    .meadow.k-click{cursor:pointer}
+
+    /* ===== Котики на поле ===== */
+    .cw-cat{position:absolute;width:100px;height:166.67px;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:2}
+    .cw-cat img{width:100px;height:150px;object-fit:contain;display:block}
+    .cw-arrow{position:absolute;left:50%;top:50%;width:42px;height:4px;margin-top:-2px;background:#659a4e;box-shadow:0 0 1px #000a;transform-origin:0 50%;transform:rotate(237deg)}
+    .cw-kurator{z-index:4;transition:left .25s,top .25s}
+    .cw-say{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);margin-bottom:-14px;max-width:260px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:#e8dfd6;color:#222;font-size:20px;font-weight:600;padding:4px 12px;border-radius:12px;box-shadow:0 2px 8px #0009}
+    .cw-kurator.top .cw-say{bottom:auto;top:100%;margin:-14px 0 0}
+
     /* ===== Блокнотик в игровой ===== */
     .np{position:absolute;left:24px;top:56px;width:400px;height:240px;min-width:180px;min-height:76px;z-index:15;display:flex;flex-direction:column;box-shadow:0 6px 22px #0009;font-family:system-ui,-apple-system,sans-serif}
     .np-head{flex:none;height:30px;display:flex;align-items:center;gap:16px;padding:0 6px 0 14px;background:#c4712f;color:#111;font-weight:800;font-size:15px;letter-spacing:.5px;text-transform:uppercase;cursor:move;user-select:none;touch-action:none}
@@ -164,7 +209,7 @@
       const hex = [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
       if (hex === KEY_HASH) { ok = true; try { localStorage.setItem(OK_KEY, KEY_HASH); } catch (e) {} }
     }
-    if (k) history.replaceState(null, '', location.pathname); // убираем ключ из адресной строки
+    if (k) { const sp = new URLSearchParams(location.search).get('s'); history.replaceState(null, '', location.pathname + (sp ? '?s=' + encodeURIComponent(sp) : '')); } // убираем ключ из адресной строки (код сессии оставляем)
     if (ok) { document.getElementById('gate').remove(); lock(false); }
     else { if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => lock(true)); else lock(true); }
   })();
@@ -185,7 +230,28 @@
       <button data-diff="easy"><b>Лёгкий</b></button>
       <button data-diff="medium"><b>Средний</b></button>
       <button data-diff="hard"><b>Тяжёлый</b></button>
+      <button id="kuratorBtn" class="k-mode"><b>Тренировка с куратором</b><span>ИСник + куратор, до 2 наблюдателей</span></button>
       <div class="who" id="who"></div>
+    </div>
+  </div>
+  <div class="diff-modal" id="sesModal" hidden>
+    <div class="diff-box reg-box">
+      <h2>Тренировка с куратором</h2>
+      <button type="button" id="sesCreate"><b>Создать сессию</b><span>получишь код и ссылку для остальных</span></button>
+      <form id="sesForm" class="ses-join">
+        <label>Или войди по коду<input id="sesCode" maxlength="8" autocomplete="off" placeholder="Например KX7P"></label>
+        <button type="submit" class="reg-go">Войти</button>
+      </form>
+      <div class="reg-err" id="sesErr"></div>
+      <div class="who"><a id="sesBack">← назад</a></div>
+    </div>
+  </div>
+  <div class="diff-modal" id="roleModal" hidden>
+    <div class="diff-box">
+      <h2>Кем будешь?</h2>
+      <div class="who" id="roleCode"></div>
+      <div id="roleBtns" class="role-btns"></div>
+      <div class="reg-err" id="roleErr"></div>
     </div>
   </div>
   <nav class="main-tabs"><span class="diff-badge" id="diffBadge"></span><button class="main-tab active" data-tab="conversation">Беседа</button><button class="main-tab" data-tab="game" id="gameTab" title="Сначала составь все пары в беседе">Игровая 🔒</button></nav>
@@ -257,6 +323,8 @@
 
     function showDifficulty() {
       document.getElementById('regModal').hidden = true;
+      const sesFromUrl = new URLSearchParams(location.search).get('s');
+      if (sesFromUrl && !showDifficulty.used) { showDifficulty.used = true; setTimeout(() => joinSession(sesFromUrl)); }
       document.getElementById('diffModal').hidden = false;
       const who = document.getElementById('who');
       who.textContent = 'Ты: ' + player.name + ' [' + player.id + '] · ';
@@ -312,6 +380,25 @@
     const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
     const norm  = s => s.toLowerCase().replace(/ё/g, 'е');
     const clock = () => new Date().toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'});
+
+    // имена тренирующихся в начале текста: «Уга, Ыса, Сереброкап и ...» → {names:[Уга, Ыса], len: длина этой части}
+    const escRe = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    function leadNames(text, pool) {
+      const n = norm(text);
+      let i = n.length - n.trimStart().length; const names = [];
+      for (;;) {
+        const x = pool.find(nm => !names.includes(nm) && new RegExp('^' + escRe(norm(nm)) + '(?![а-яa-z0-9])').test(n.slice(i)));
+        if (!x) break;
+        names.push(x); i += x.length;
+        const sep = n.slice(i).match(/^[\s,]*/)[0]; i += sep.length;
+      }
+      return {names, len: i};
+    }
+    function addLeadName(text, name, pool) {
+      const lead = leadNames(text, pool);
+      const names = lead.names.includes(name) ? lead.names : lead.names.concat(name);
+      return names.map(x => x + ', ').join('') + text.slice(lead.len);
+    }
 
     // ===== Выбор сложности =====
     const modal = document.getElementById('diffModal');
@@ -430,6 +517,7 @@
           gameTab.textContent = 'Игровая'; gameTab.title = '';
           win.hidden = false;
           fillNotepad(order);
+          renderCats(rollCats(paired.size));
         }
       });
       win.addEventListener('click', () => { win.hidden = true; gameTab.click(); });
@@ -443,6 +531,34 @@
       document.getElementById('gameView').hidden = convo;
       if (!convo) document.getElementById('vkWin').hidden = true;
     }));
+
+    // ===== Котики-манекены на поле =====
+    // клетки: [столбец, ряд], считая с 1 (поле 10×6)
+    const CAT_SPOTS = [[1,2],[7,2],[4,3],[10,3],[1,5],[7,5],[4,6],[10,6]];
+    const CAT_MODELS = ['1ff70d0a6a546236.png','32dfbdd5fbd493b3.png','Poslednyaya.png','Shepot_Zvezd1.png','a1c378b0520c8dba (1).png','e6969d74c4117971.png','slepysh.png','zagruzhennoe_5.png'];
+    const KURATOR_IMG = '8bdc9c1809062a21 (1).png';
+    const CELL_W = 100, CELL_H = 1000 / 6;
+    const board = document.querySelector('.meadow');
+    // случайно раскидать n котиков по отмеченным клеткам
+    function rollCats(n) {
+      const spots = shuffle(CAT_SPOTS), models = shuffle(CAT_MODELS);
+      return spots.slice(0, Math.min(n, spots.length)).map(([c, r], i) => ({c, r, img: models[i % models.length]}));
+    }
+    function makeCat(img, cls) {
+      const el = document.createElement('div'); el.className = 'cw-cat' + (cls ? ' ' + cls : '');
+      const im = document.createElement('img'); im.src = encodeURI(img); im.alt = ''; im.draggable = false;
+      el.appendChild(im);
+      return el;
+    }
+    function moveCat(el, c, r) { el.style.left = (c - 1) * CELL_W + 'px'; el.style.top = (r - 1) * CELL_H + 'px'; }
+    function renderCats(list) {
+      board.querySelectorAll('.cw-cat.dummy').forEach(el => el.remove());
+      (list || []).forEach(({c, r, img}) => {
+        const el = makeCat(img, 'dummy');
+        const ar = document.createElement('div'); ar.className = 'cw-arrow'; el.appendChild(ar);
+        moveCat(el, c, r); board.appendChild(el);
+      });
+    }
 
     // ===== Блокнотик =====
     const notepad = document.getElementById('notepad');
@@ -522,11 +638,14 @@
         list.scrollTop = list.scrollHeight;
       }
 
+      const openNames = () => TASKS.filter(x => !done.has(x.name)).map(x => x.name);
       function refresh() {
+        const picked = leadNames(input.value, openNames()).names;
         list.querySelectorAll('.cw-row.trainee').forEach(r =>
-          r.classList.toggle('chosen', !!selected && r.dataset.name === selected.name && !done.has(r.dataset.name))
+          r.classList.toggle('chosen', picked.includes(r.dataset.name) && !done.has(r.dataset.name))
         );
       }
+      input.addEventListener('input', refresh);
 
       function setTopic() {
         topic.textContent = started
@@ -544,12 +663,13 @@
         }, 2000);
       }
 
-      function fail(t) {
-        player.gameErrors++;
+      function fail(bad) {
+        player.gameErrors += bad.length;
         game.classList.remove('cw-error'); void game.offsetWidth; game.classList.add('cw-error');
         setTimeout(() => game.classList.remove('cw-error'), 750);
-        selected = t; refresh();
-        input.value = t.name + ', ';
+        selected = bad[0];
+        input.value = bad.map(t => t.name + ', ').join('');
+        refresh();
       }
 
       function success(t) {
@@ -567,10 +687,11 @@
       list.addEventListener('click', e => {
         const row = e.target.closest('.cw-row');
         if (!row || row.classList.contains('me') || row.classList.contains('sys') || row.classList.contains('done')) return;
-        input.value = row.dataset.name + ', ';
+        input.value = addLeadName(input.value, row.dataset.name, openNames());
         input.focus();
         const t = TASKS.find(x => x.name === row.dataset.name);
-        if (t) { selected = t; refresh(); }
+        if (t) selected = t;
+        refresh();
       });
 
       form.addEventListener('submit', e => {
@@ -582,29 +703,515 @@
         const n = norm(text);
         if (!started) { if (n.includes('тренирующ')) start(); return; }
 
-        let t = null, rest = n;
-        for (const x of TASKS) {
-          if (done.has(x.name)) continue;
-          const m = n.match(new RegExp('^' + norm(x.name) + '(?![а-я])'));
-          if (m) { t = x; rest = n.slice(m[0].length); break; }
-        }
-        if (!t && selected) t = selected;
-        if (!t) return;
+        // в начале сообщения — один или несколько тренирующихся через запятую
+        const lead = leadNames(text, openNames());
+        let ts = lead.names.map(nm => TASKS.find(x => x.name === nm)), rest = n.slice(lead.len);
+        if (!ts.length && selected && !done.has(selected.name)) { ts = [selected]; rest = n; }
+        if (!ts.length) return;
 
         // в ответе должны быть ровно два тренера — БГ и МГ нужной пары
         const named = allTrainers.filter(name => rest.includes(norm(name)));
         const g = named.length === 2 ? PAIRS.findIndex(p => p && p.every(name => named.includes(name))) : -1;
-        if (g >= 0 && t.pairs.includes(g)) success(t);
-        else if (g >= 0 && t.alts.includes(g)) {
-          success(t);
-          const b = PAIRS[t.pairs[0]];
-          addRow('Система', 'Лучше было распределить ' + t.name + ' к паре ' + b[0] + ' и ' + b[1] + ', но так тоже можно.', 'sys');
-        }
-        else fail(t);
+        const ok = t => g >= 0 && (t.pairs.includes(g) || t.alts.includes(g));
+        ts.filter(ok).forEach(success);
+        const bad = ts.filter(t => !ok(t));
+        if (bad.length) fail(bad);
       });
 
       setTopic();
     }
+
+    // =====================================================================
+    // ===== Тренировка с куратором (сессия на 4 человек) =====
+    // =====================================================================
+    // Настройки Firebase: вставь сюда то, что выдаст Firebase (см. инструкцию).
+    // Пока тут пусто, сессия работает только между вкладками одного браузера (для проверки).
+    const FIREBASE_CONFIG = {
+    };
+
+    const ROLE_LIST = [['kurator', 'Проверяющий (куратор)'], ['isnik', 'ИСник'], ['obs1', 'Наблюдатель'], ['obs2', 'Наблюдатель']];
+    const ROLE_NAME = {kurator: 'Куратор', isnik: 'ИСник', obs1: 'Наблюдатель', obs2: 'Наблюдатель'};
+    const SAYS = ['бьёт БГ в хвост', 'бьёт БГ в живот', 'бьёт БГ в горло', 'регенится', 'выходит из бр', 'отсыпается'];
+    const DEFAULT_SAY = 'тренируется';
+    const CODE_ABC = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    const cleanCode = s => (s || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8);
+    const ss = {
+      get(k) { try { return JSON.parse(sessionStorage.getItem(k) || 'null'); } catch (e) { return null; } },
+      set(k, v) { try { sessionStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+    };
+    let myUid = ss.get('kUid');
+    if (!myUid) { myUid = Math.random().toString(36).slice(2, 10); ss.set('kUid', myUid); }
+
+    const loadScript = src => new Promise((res, rej) => { const el = document.createElement('script'); el.src = src; el.onload = res; el.onerror = rej; document.head.appendChild(el); });
+    const getPath = (o, path) => path.split('/').reduce((a, k) => a == null ? undefined : a[k], o);
+    function setPath(o, path, val) {
+      const ks = path.split('/'); let a = o;
+      ks.slice(0, -1).forEach(k => { if (typeof a[k] !== 'object' || a[k] === null) a[k] = {}; a = a[k]; });
+      if (val === null || val === undefined) delete a[ks[ks.length - 1]]; else a[ks[ks.length - 1]] = val;
+    }
+    const newId = () => Date.now().toString(36).padStart(9, '0') + Math.random().toString(36).slice(2, 6);
+    const vals = o => Object.keys(o || {}).sort().map(k => o[k]);
+
+    // ----- хранилище сессии: Firebase или (запасной) вкладки одного браузера -----
+    async function openRoom(code) {
+      if (FIREBASE_CONFIG.databaseURL) {
+        if (!window.firebase) {
+          await loadScript('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js');
+          await loadScript('https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js');
+        }
+        if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+        const ref = firebase.database().ref('rooms/' + code);
+        return {
+          online: true,
+          get: () => ref.once('value').then(s => s.val()),
+          set: (path, val) => ref.child(path).set(val),
+          push: (path, val) => ref.child(path).push(val),
+          claim: (role, data) => ref.child('roles/' + role)
+            .transaction(cur => (!cur || cur.uid === data.uid) ? data : undefined)
+            .then(r => { if (r.committed) ref.child('roles/' + role).onDisconnect().remove(); return r.committed; }),
+          listen: cb => ref.on('value', s => cb(s.val() || {}))
+        };
+      }
+      const key = 'kRoom_' + code;
+      const bc = 'BroadcastChannel' in window ? new BroadcastChannel(key) : null;
+      const subs = [];
+      const read = () => { try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch (e) { return null; } };
+      const fire = () => { const o = read() || {}; subs.forEach(cb => cb(o)); };
+      const write = o => { try { localStorage.setItem(key, JSON.stringify(o)); } catch (e) {} if (bc) bc.postMessage(1); fire(); };
+      if (bc) bc.onmessage = fire;
+      window.addEventListener('storage', e => { if (e.key === key) fire(); });
+      return {
+        online: false,
+        get: async () => read(),
+        set: async (path, val) => { const o = read() || {}; setPath(o, path, val); write(o); },
+        push: async (path, val) => { const o = read() || {}; setPath(o, path + '/' + newId(), val); write(o); },
+        claim: async (role, data) => {
+          const o = read() || {}; const cur = getPath(o, 'roles/' + role);
+          if (cur && cur.uid !== data.uid) return false;
+          setPath(o, 'roles/' + role, data); write(o);
+          window.addEventListener('pagehide', () => { const x = read() || {}; if (getPath(x, 'roles/' + role + '/uid') === data.uid) { setPath(x, 'roles/' + role, null); write(x); } });
+          return true;
+        },
+        listen: cb => { subs.push(cb); cb(read() || {}); }
+      };
+    }
+
+    // ----- меню сессии -----
+    const sesModal = document.getElementById('sesModal');
+    const roleModal = document.getElementById('roleModal');
+    const sesErr = document.getElementById('sesErr');
+    const sesBusy = on => sesModal.querySelectorAll('button').forEach(b => { b.disabled = on; });
+
+    document.getElementById('kuratorBtn').addEventListener('click', () => {
+      document.getElementById('diffModal').hidden = true;
+      sesModal.hidden = false; sesErr.textContent = '';
+    });
+    document.getElementById('sesBack').addEventListener('click', () => {
+      sesModal.hidden = true; document.getElementById('diffModal').hidden = false;
+    });
+    document.getElementById('sesCreate').addEventListener('click', async () => {
+      sesErr.textContent = ''; sesBusy(true);
+      try {
+        let code, room;
+        for (let k = 0; k < 6; k++) {
+          code = Array.from({length: 4}, () => CODE_ABC[Math.floor(Math.random() * CODE_ABC.length)]).join('');
+          room = await openRoom(code);
+          const st = await room.get();
+          if (!st || !st.meta) break;
+        }
+        await room.set('meta', {created: Date.now(), by: player.name});
+        await room.set('phase', 'convo');
+        chooseRole(code, room);
+      } catch (e) { console.warn(e); sesErr.textContent = 'Не получилось создать сессию. Проверь интернет и настройки Firebase.'; }
+      sesBusy(false);
+    });
+    document.getElementById('sesForm').addEventListener('submit', e => { e.preventDefault(); joinSession(document.getElementById('sesCode').value); });
+
+    async function joinSession(raw) {
+      const code = cleanCode(raw);
+      document.getElementById('diffModal').hidden = true;
+      sesModal.hidden = false; sesErr.textContent = '';
+      document.getElementById('sesCode').value = code;
+      if (code.length < 4) { sesErr.textContent = 'Введи код сессии'; return; }
+      sesBusy(true);
+      try {
+        const room = await openRoom(code);
+        const st = await room.get();
+        if (!st || !st.meta) {
+          sesErr.textContent = room.online ? 'Сессия с таким кодом не найдена' : 'Сессия не найдена (без Firebase сессии видны только в этом браузере)';
+        } else chooseRole(code, room);
+      } catch (e) { console.warn(e); sesErr.textContent = 'Не получилось подключиться. Проверь интернет.'; }
+      sesBusy(false);
+    }
+
+    function chooseRole(code, room) {
+      sesModal.hidden = true; roleModal.hidden = false;
+      const link = location.origin + location.pathname + '?s=' + code;
+      try { history.replaceState(null, '', location.pathname + '?s=' + code); } catch (e) {}
+      document.getElementById('roleCode').innerHTML = '';
+      const rc = document.getElementById('roleCode');
+      rc.append('Код сессии: ');
+      const b = document.createElement('b'); b.textContent = code; rc.appendChild(b);
+      const err = document.getElementById('roleErr'); err.textContent = room.online ? '' : '⚠ Firebase не подключён — сессия работает только во вкладках этого браузера';
+      const box = document.getElementById('roleBtns'); box.innerHTML = '';
+      const btns = {};
+      ROLE_LIST.forEach(([role, label]) => {
+        const btn = document.createElement('button'); btn.type = 'button';
+        btn.innerHTML = '<b></b><span></span>'; btn.querySelector('b').textContent = label;
+        btn.addEventListener('click', () => take(role));
+        btns[role] = btn; box.appendChild(btn);
+      });
+      let state = {}, started = false;
+      const paint = st => {
+        state = st;
+        ROLE_LIST.forEach(([role]) => {
+          const who = getPath(st, 'roles/' + role);
+          const busy = !!who && who.uid !== myUid;
+          btns[role].disabled = busy;
+          btns[role].querySelector('span').textContent = busy ? 'занято: ' + who.name : 'свободно';
+        });
+      };
+      let onState = paint;
+      room.listen(st => onState(st));
+      async function take(role) {
+        if (started) return;
+        const ok = await room.claim(role, {name: player.name, uid: myUid});
+        if (!ok) { err.textContent = 'Эту роль уже заняли'; return; }
+        started = true;
+        ss.set('kSession', {code, role});
+        roleModal.hidden = true;
+        onState = startKurator(code, room, role, link);
+        onState(state);
+      }
+      // вернулись после обновления страницы — пробуем занять ту же роль
+      const saved = ss.get('kSession');
+      if (saved && saved.code === code) take(saved.role);
+    }
+
+    // ----- сама тренировка -----
+    function startKurator(code, room, role, link) {
+      const K = role === 'kurator', I = role === 'isnik';
+      MY = player.name; player.difficulty = 'С куратором';
+      document.getElementById('diffBadge').textContent = player.name + ' · ' + ROLE_NAME[role] + ' · сессия ' + code;
+      const el = id => document.getElementById(id);
+      const mk = (tag, cls, txt) => { const x = document.createElement(tag); if (cls) x.className = cls; if (txt != null) x.textContent = txt; return x; };
+
+      // --- Беседа ---
+      const vkList = el('vkMessages'), vkForm = el('vkForm'), vkText = el('vkText');
+      vkList.innerHTML = '';
+      vkForm.hidden = !I; if (!I) vkForm.style.display = 'none';
+      const aside = document.querySelector('.conversation-instructions');
+      aside.innerHTML = ''; aside.classList.add('k-aside');
+      const codeBox = mk('div', 'k-code');
+      codeBox.append('Код сессии: '); codeBox.appendChild(mk('b', '', code));
+      const linkRow = mk('div', 'k-link');
+      const linkIn = mk('input'); linkIn.readOnly = true; linkIn.value = link;
+      const copyBtn = mk('button', 'k-dbtn', 'Скопировать ссылку'); copyBtn.type = 'button';
+      copyBtn.addEventListener('click', () => {
+        linkIn.select();
+        (navigator.clipboard ? navigator.clipboard.writeText(link) : Promise.reject()).catch(() => document.execCommand('copy'));
+        copyBtn.textContent = 'Скопировано ✓'; setTimeout(() => { copyBtn.textContent = 'Скопировать ссылку'; }, 1500);
+      });
+      linkRow.append(linkIn, copyBtn);
+      const rolesBox = mk('div', 'k-roles');
+      aside.append(codeBox, linkRow, rolesBox);
+      if (!room.online) aside.appendChild(mk('div', 'k-warn', '⚠ Firebase не подключён — сессия видна только во вкладках этого браузера.'));
+
+      let tSel, tVal;
+      if (K) {
+        aside.appendChild(mk('div', 'k-h', 'Написать от лица тренера'));
+        tSel = mk('select', 'k-dsel'); tVal = mk('input', 'k-din'); tVal.placeholder = 'Дробь, например 5009/7к';
+        const tSend = mk('button', 'k-dbtn k-main', 'Отправить'); tSend.type = 'button';
+        const toGame = mk('button', 'k-dbtn k-go', 'Перейти в игровую ▶'); toGame.type = 'button';
+        aside.append(tSel, tVal, tSend, mk('div', 'k-note', 'Ответы ИСника отмечай ✅ или ❌ прямо в чате. Когда пары готовы — переводи в игровую.'), toGame);
+        const sendT = () => {
+          const v = tVal.value.trim(); if (!v || !tSel.value) return;
+          room.push('convo', {who: 'k', name: tSel.value, text: v, t: clock()});
+          tVal.value = ''; tVal.focus();
+        };
+        tSend.addEventListener('click', sendT);
+        tVal.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); sendT(); } });
+        toGame.addEventListener('click', () => {
+          const n = vals(S.pairs).length;
+          room.set('cats', rollCats(n * 2));
+          room.set('phase', 'game');
+        });
+      } else {
+        aside.appendChild(mk('div', 'k-text', I
+          ? 'Куратор пишет дроби от лица тренеров. Нажимай на сообщения: сначала БГ, затем МГ — и отправляй. Правильно или нет, решает куратор.'
+          : 'Ты наблюдаешь за тренировкой. Всё, что происходит, видно здесь и во вкладке «Игровая».'));
+      }
+
+      // --- Игровая ---
+      const gameView = el('gameView'), gameTab = el('gameTab');
+      gameView.querySelector('.game-lock').textContent = '🔒 Ждём, пока куратор переведёт в игровую';
+      const game = document.querySelector('.catworld');
+      const gList = el('messages'), gForm = el('chatForm'), gInput = el('chatInput'), topic = el('topic');
+      gList.innerHTML = '';
+      if (!I) gForm.style.display = 'none';
+      const flash = mk('div', 'cw-flash'), win = mk('div', 'cw-win', 'Тренировка завершена! Ты умница! Так держать!'); win.hidden = true;
+      game.append(flash, win);
+
+      let sSel, sVal, sayBtns = [];
+      if (K) {
+        const panel = mk('section', 'cw-panel k-panel');
+        panel.appendChild(mk('h3', '', 'Панель куратора'));
+        const r1 = mk('div', 'k-row');
+        sSel = mk('select'); sVal = mk('input'); sVal.placeholder = 'Дробь';
+        const sSend = mk('button', 'k-btn', 'Отправить'); sSend.type = 'button';
+        r1.append(sSel, sVal, sSend);
+        panel.append(mk('div', 'k-sub', 'От лица тренирующегося:'), r1);
+        panel.appendChild(mk('div', 'k-sub', 'Кликай по клеткам поля — так ты ходишь. Надпись над тобой:'));
+        const says = mk('div', 'k-says');
+        [DEFAULT_SAY].concat(SAYS).forEach(t => {
+          const b = mk('button', '', t); b.type = 'button';
+          b.addEventListener('click', () => room.set('say', t));
+          sayBtns.push(b); says.appendChild(b);
+        });
+        const r2 = mk('div', 'k-row');
+        const own = mk('input'); own.placeholder = 'Своя надпись'; own.maxLength = 60;
+        const ownBtn = mk('button', 'k-btn', 'OK'); ownBtn.type = 'button';
+        const setOwn = () => { const v = own.value.trim(); if (v) { room.set('say', v); own.value = ''; } };
+        ownBtn.addEventListener('click', setOwn);
+        own.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); setOwn(); } });
+        r2.append(own, ownBtn);
+        const fin = mk('button', 'k-btn k-fin', 'Завершить тренировку'); fin.type = 'button';
+        fin.addEventListener('click', () => room.set('phase', 'done'));
+        panel.append(says, r2, fin);
+        document.querySelector('.cw-chat').after(panel);
+        const sendS = () => {
+          const v = sVal.value.trim(); if (!v || !sSel.value) return;
+          room.push('game', {who: 'k', name: sSel.value, text: v, t: clock()});
+          sVal.value = ''; sVal.focus();
+        };
+        sSend.addEventListener('click', sendS);
+        sVal.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); sendS(); } });
+        // ходьба по клеткам
+        board.classList.add('k-click');
+        board.addEventListener('click', e => {
+          const r = board.getBoundingClientRect();
+          const x = (e.clientX - r.left) / r.width * 1000, y = (e.clientY - r.top) / r.height * 1000;
+          const c = Math.min(10, Math.max(1, Math.floor(x / CELL_W) + 1)), rw = Math.min(6, Math.max(1, Math.floor(y / CELL_H) + 1));
+          room.set('kpos', {c, r: rw});
+          if (!S.say) room.set('say', DEFAULT_SAY);
+        });
+      }
+
+      // --- состояние ---
+      let S = {};
+      const pairedNames = () => new Set(vals(S.pairs).flat());
+      const convoTrainers = () => vals(S.convo).filter(m => m.who === 'k').map(m => m.name);
+      const gameTrainees = () => vals(S.game).filter(m => m.who === 'k').map(m => m.name);
+      const openTrainees = () => gameTrainees().filter(n => !(S.done && S.done[n]));
+
+      // ИСник: выбор БГ/МГ в беседе
+      let picked = [];
+      function renderPick() {
+        vkText.value = picked.map((n, i) => (i === 0 ? 'БГ - ' : 'МГ - ') + n).join('\n');
+        vkList.querySelectorAll('.vk-message.pick').forEach(x => x.classList.toggle('sel', picked.includes(x.dataset.name)));
+      }
+      if (I) {
+        el('vkClear').addEventListener('click', () => { picked = []; renderPick(); });
+        vkText.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); vkForm.requestSubmit(); } });
+        vkForm.addEventListener('submit', e => {
+          e.preventDefault();
+          const body = vkText.value.trim(); if (!body) return;
+          room.push('convo', {who: 'i', name: player.name, text: body, t: clock()});
+          picked = []; renderPick();
+        });
+        gForm.addEventListener('submit', e => {
+          e.preventDefault();
+          const text = gInput.value.trim(); if (!text) return;
+          room.push('game', {who: 'i', name: player.name, text, t: clock()});
+          gInput.value = ''; refreshChosen();
+        });
+        gInput.addEventListener('input', () => refreshChosen());
+      }
+      vkList.addEventListener('click', e => {
+        const j = e.target.closest('[data-judge]');
+        if (j && K) { judgeConvo(j.closest('.vk-message').dataset.id, j.dataset.judge); return; }
+        if (!I) return;
+        const m = e.target.closest('.vk-message.pick');
+        if (!m || m.classList.contains('paired')) return;
+        const n = m.dataset.name;
+        picked = picked.includes(n) ? picked.filter(x => x !== n) : picked.concat(n);
+        renderPick(); vkText.focus();
+      });
+      gList.addEventListener('click', e => {
+        const j = e.target.closest('[data-judge]');
+        if (j && K) { judgeGame(j.closest('.cw-row').dataset.id, j.dataset.judge); return; }
+        if (!I) return;
+        const row = e.target.closest('.cw-row.trainee');
+        if (!row || row.classList.contains('done')) return;
+        gInput.value = addLeadName(gInput.value, row.dataset.name, openTrainees());
+        gInput.focus(); refreshChosen();
+      });
+      function refreshChosen() {
+        const p = leadNames(gInput.value, openTrainees()).names;
+        gList.querySelectorAll('.cw-row.trainee').forEach(r => r.classList.toggle('chosen', p.includes(r.dataset.name) && !r.classList.contains('done')));
+      }
+
+      function judgeConvo(id, v) {
+        const m = S.convo && S.convo[id]; if (!m || m.st) return;
+        room.set('convo/' + id + '/st', v);
+        if (v !== 'ok') return;
+        const low = norm(m.text), paired = pairedNames();
+        const found = [...new Set(convoTrainers())].filter(n => low.includes(norm(n)) && !paired.has(n))
+          .sort((a, b) => low.indexOf(norm(a)) - low.indexOf(norm(b)));
+        if (found.length === 2) room.push('pairs', found);
+      }
+      function judgeGame(id, v) {
+        const m = S.game && S.game[id]; if (!m || m.st) return;
+        room.set('game/' + id + '/st', v);
+        if (v === 'ok') leadNames(m.text, openTrainees()).names.forEach(n => room.set('done/' + n, true));
+      }
+
+      function judgeBox() {
+        const box = mk('span', 'k-judge');
+        const ok = mk('button', 'k-ok', '✅'); ok.type = 'button'; ok.dataset.judge = 'ok'; ok.title = 'Верно';
+        const bad = mk('button', 'k-bad', '❌'); bad.type = 'button'; bad.dataset.judge = 'bad'; bad.title = 'Неверно';
+        box.append(ok, bad); return box;
+      }
+      function sync(container, data, map, build, update) {
+        let added = false;
+        Object.keys(data || {}).sort().forEach(id => {
+          let x = map.get(id);
+          if (!x) { x = build(id, data[id]); x.dataset.id = id; map.set(id, x); container.appendChild(x); added = true; }
+          update(x, data[id]);
+        });
+        if (added) container.scrollTop = container.scrollHeight;
+      }
+      const convoEls = new Map(), gameEls = new Map();
+      function buildVk(id, m) {
+        const x = mk('div', 'vk-message' + (m.who === 'k' ? ' pick' : ' mine'));
+        x.innerHTML = '<div class="vk-person"></div><div><div class="vk-message-name"></div><div class="vk-message-text"></div></div><div class="vk-time"></div>';
+        x.querySelector('.vk-person').textContent = (m.who === 'k' ? m.name[0].toLowerCase() : (m.name || 'И')[0]);
+        x.querySelector('.vk-message-name').textContent = m.who === 'k' ? m.name : m.name + ' (ИСник)';
+        x.querySelector('.vk-message-text').textContent = m.text;
+        x.querySelector('.vk-time').textContent = m.t || '';
+        x.dataset.name = m.name;
+        if (m.who === 'i') {
+          const mark = mk('span', 'k-mark'); x.querySelector('.vk-message-name').appendChild(mark);
+          if (K) x.children[1].appendChild(judgeBox());
+        }
+        return x;
+      }
+      function updVk(x, m) {
+        if (m.who === 'k') { x.classList.toggle('paired', pairedNames().has(m.name)); return; }
+        x.querySelector('.k-mark').textContent = m.st === 'ok' ? ' ✅' : m.st === 'bad' ? ' ❌' : '';
+        const j = x.querySelector('.k-judge'); if (j) j.hidden = !!m.st;
+      }
+      function buildRow(id, m) {
+        const row = mk('div', 'cw-row' + (m.who === 'k' ? ' trainee' : ' me'));
+        row.dataset.name = m.name;
+        [['cw-t', '[' + (m.t || '') + ']'], ['cw-x', m.text], ['cw-d', '—'], ['cw-n', m.name]].forEach(([c, t]) => row.appendChild(mk('span', c, t)));
+        if (m.who === 'k') row.appendChild(mk('span', 'cw-a', '→'));
+        else { row.appendChild(mk('span', 'cw-a k-mark')); if (K) row.querySelector('.cw-a').appendChild(judgeBox()); }
+        return row;
+      }
+      function updRow(row, m) {
+        if (m.who === 'k') {
+          const d = !!(S.done && S.done[m.name]);
+          row.classList.toggle('done', d); row.querySelector('.cw-a').textContent = d ? '✓' : '→';
+          return;
+        }
+        const a = row.querySelector('.cw-a');
+        if (m.st) a.textContent = m.st === 'ok' ? '✅' : '❌';
+      }
+
+      function flashErr(where) {
+        if (K) return;
+        if (where === 'convo') {
+          document.body.classList.remove('vk-error'); void document.body.offsetWidth; document.body.classList.add('vk-error');
+          setTimeout(() => document.body.classList.remove('vk-error'), 1000);
+        } else {
+          game.classList.remove('cw-error'); void game.offsetWidth; game.classList.add('cw-error');
+          setTimeout(() => game.classList.remove('cw-error'), 750);
+        }
+      }
+      const seenBad = new Set(); let firstPaint = true, lastPhase = null, lastCats = '', lastPairs = '';
+      let kurCat = null;
+
+      return function apply(st) {
+        S = st || {};
+        // моя роль на месте? (после обрыва связи — занимаем снова)
+        const me = getPath(S, 'roles/' + role);
+        if (!me || me.uid !== myUid) { if (!me) room.claim(role, {name: player.name, uid: myUid}); }
+
+        // кто в сессии
+        rolesBox.innerHTML = '';
+        ROLE_LIST.forEach(([r, label]) => {
+          const who = getPath(S, 'roles/' + r);
+          const line = mk('div', who ? '' : 'k-free'); line.textContent = label + ': ' + (who ? who.name : '—');
+          rolesBox.appendChild(line);
+        });
+
+        // беседа
+        sync(vkList, S.convo, convoEls, buildVk, updVk);
+        picked = picked.filter(n => !pairedNames().has(n));
+        if (K) {
+          const used = new Set(convoTrainers());
+          const cur = tSel.value;
+          tSel.innerHTML = '';
+          shuffleOnce.t = shuffleOnce.t || shuffle(TRAINERS);
+          shuffleOnce.t.filter(n => !used.has(n)).forEach(n => { const o = mk('option', '', n); o.value = n; tSel.appendChild(o); });
+          if ([...tSel.options].some(o => o.value === cur)) tSel.value = cur;
+          const usedS = new Set(gameTrainees());
+          const curS = sSel.value;
+          sSel.innerHTML = '';
+          shuffleOnce.s = shuffleOnce.s || shuffle(TRAINEES);
+          shuffleOnce.s.filter(n => !usedS.has(n)).forEach(n => { const o = mk('option', '', n); o.value = n; sSel.appendChild(o); });
+          if ([...sSel.options].some(o => o.value === curS)) sSel.value = curS;
+          sayBtns.forEach(b => b.classList.toggle('on', b.textContent === (S.say || '')));
+        }
+
+        // блокнотик
+        const pj = JSON.stringify(vals(S.pairs));
+        if (pj !== lastPairs) { lastPairs = pj; fillNotepad(vals(S.pairs)); }
+
+        // игровая
+        sync(gList, S.game, gameEls, buildRow, updRow);
+        if (I) refreshChosen();
+        const total = gameTrainees().length, doneN = gameTrainees().filter(n => S.done && S.done[n]).length;
+        topic.textContent = K ? 'Ты куратор: пиши дроби от лица тренирующихся · расставлено ' + doneN + '/' + total
+          : I ? 'Расставлено: ' + doneN + '/' + total + ' — нажимай на тренирующихся и пиши имена ДГ'
+          : 'Ты наблюдаешь · расставлено ' + doneN + '/' + total;
+
+        // ошибки → красный экран у ИСника и наблюдателей
+        [['convo', S.convo], ['game', S.game]].forEach(([where, data]) => Object.keys(data || {}).forEach(id => {
+          if (data[id].st === 'bad' && !seenBad.has(id)) { seenBad.add(id); if (!firstPaint) flashErr(where); }
+        }));
+
+        // этапы
+        const phase = S.phase || 'convo';
+        if (phase !== 'convo') {
+          gameView.classList.remove('locked'); gameView.inert = false;
+          gameTab.textContent = 'Игровая'; gameTab.title = '';
+          if (lastPhase === 'convo' || (firstPaint && lastPhase === null)) gameTab.click();
+        } else {
+          gameView.classList.add('locked'); gameView.inert = true;
+          gameTab.textContent = 'Игровая 🔒';
+        }
+        win.hidden = phase !== 'done';
+        lastPhase = phase;
+
+        // котики и куратор на поле
+        const cj = JSON.stringify(S.cats || []);
+        if (cj !== lastCats) { lastCats = cj; renderCats(S.cats || []); }
+        if (S.kpos) {
+          if (!kurCat) {
+            kurCat = makeCat(KURATOR_IMG, 'cw-kurator');
+            kurCat.appendChild(mk('div', 'cw-say'));
+            board.appendChild(kurCat);
+          }
+          moveCat(kurCat, S.kpos.c, S.kpos.r);
+          kurCat.classList.toggle('top', S.kpos.r === 1);
+          kurCat.querySelector('.cw-say').textContent = S.say || DEFAULT_SAY;
+        }
+        firstPaint = false;
+      };
+    }
+    const shuffleOnce = {};
   })();
   </script>
 <script>
