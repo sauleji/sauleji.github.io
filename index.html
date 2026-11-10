@@ -533,16 +533,18 @@
     }));
 
     // ===== Котики-манекены на поле =====
-    // клетки: [столбец, ряд], считая с 1 (поле 10×6)
-    const CAT_SPOTS = [[1,2],[7,2],[4,3],[10,3],[1,5],[7,5],[4,6],[10,6]];
+    // места под ДГ: [БГ, МГ], клетка = [столбец, ряд], считая с 1 (поле 10×6)
+    // БГ стоит слева и на ряд выше, МГ — справа и на ряд ниже
+    const DG_SLOTS = [[[1,2],[4,3]], [[7,2],[10,3]], [[1,5],[4,6]], [[7,5],[10,6]]];
     const CAT_MODELS = ['1ff70d0a6a546236.png','32dfbdd5fbd493b3.png','Poslednyaya.png','Shepot_Zvezd1.png','a1c378b0520c8dba (1).png','e6969d74c4117971.png','slepysh.png','zagruzhennoe_5.png'];
     const KURATOR_IMG = '8bdc9c1809062a21 (1).png';
     const CELL_W = 100, CELL_H = 1000 / 6;
     const board = document.querySelector('.meadow');
-    // случайно раскидать n котиков по отмеченным клеткам
+    // n котиков = n/2 пар: каждая пара встаёт на случайное место ДГ (БГ + МГ рядом)
     function rollCats(n) {
-      const spots = shuffle(CAT_SPOTS), models = shuffle(CAT_MODELS);
-      return spots.slice(0, Math.min(n, spots.length)).map(([c, r], i) => ({c, r, img: models[i % models.length]}));
+      const slots = shuffle(DG_SLOTS).slice(0, Math.min(Math.ceil(n / 2), DG_SLOTS.length));
+      const models = shuffle(CAT_MODELS);
+      return slots.flat().slice(0, n).map(([c, r], i) => ({c, r, img: models[i % models.length]}));
     }
     function makeCat(img, cls) {
       const el = document.createElement('div'); el.className = 'cw-cat' + (cls ? ' ' + cls : '');
