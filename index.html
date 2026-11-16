@@ -168,6 +168,22 @@
     .k-exit{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:#3a1f1f;color:#ffb3a8;border:1px solid #5a2a2a;border-radius:8px;padding:4px 12px;font-size:13px;cursor:pointer}
     .k-exit:hover{background:#5a2a2a;color:#fff}
     .k-exit[hidden]{display:none}
+    /* имя тренера и его БУ — в одну строку */
+    .vk-message.pick>div:nth-child(2){display:flex;flex-wrap:wrap;align-items:baseline;column-gap:6px}
+    .vk-message.pick .vk-message-name{margin-bottom:0}
+    /* верхние кнопки сессии */
+    .k-top{position:absolute;right:14px;top:50%;transform:translateY(-50%);display:flex;gap:8px}
+    .k-top .k-exit{position:static;transform:none}
+    .k-restart{background:#2d2d2d;color:#ddd;border:1px solid #444;border-radius:8px;padding:4px 12px;font-size:13px;cursor:pointer}
+    .k-restart:hover{background:#3a3a3a;color:#fff}
+    .k-restart.armed{background:#a8321f;border-color:#a8321f;color:#fff}
+    .k-restart[hidden]{display:none}
+    /* удаление сообщений куратором */
+    .k-del{border:0;background:transparent;color:#888;cursor:pointer;font-size:14px;padding:0 4px;opacity:0;transition:opacity .15s}
+    .vk-message:hover .k-del,.cw-row:hover .k-del{opacity:1}
+    .k-del:hover{color:#ff6b6b}
+    .vk-message .k-del{display:block;margin:4px 0 0 auto}
+    .cw-row .k-del{margin-left:auto;color:#7a5a45;font-size:13px}
     option.k-used{color:#8a8a8a}
     .k-panel option.k-used{color:#9a8878}
     .vk-message.k-sys,.cw-row.k-sys{opacity:.55;font-style:italic}
@@ -246,7 +262,7 @@
       <div class="reg-err" id="roleErr"></div>
     </div>
   </div>
-  <nav class="main-tabs"><span class="diff-badge" id="diffBadge"></span><button class="main-tab active" data-tab="conversation">Беседа</button><button class="main-tab" data-tab="game" id="gameTab" title="Сначала составь все пары в беседе">Игровая 🔒</button><button type="button" class="k-exit" id="kExit" hidden>Выйти из сессии</button></nav>
+  <nav class="main-tabs"><span class="diff-badge" id="diffBadge"></span><button class="main-tab active" data-tab="conversation">Беседа</button><button class="main-tab" data-tab="game" id="gameTab" title="Сначала составь все пары в беседе">Игровая 🔒</button><span class="k-top"><button type="button" class="k-restart" id="kRestart" hidden title="Начать эту же сессию заново">Перезапустить</button><button type="button" class="k-exit" id="kExit" hidden>Выйти из сессии</button></span></nav>
   <div class="vk-flash"></div><div class="vk-win" id="vkWin" hidden>Переходи во вкладку «Игровая»</div>
   <section class="conversation-view" id="conversationView">
     <div class="vk-chat">
@@ -255,7 +271,7 @@
       <div class="vk-messages" id="vkMessages"></div>
       <form class="vk-input" id="vkForm"><button type="button" class="vk-clear" id="vkClear" title="Очистить">⊕</button><textarea id="vkText" placeholder="Нажми на сообщение, чтобы выбрать БГ, затем МГ"></textarea><button type="submit" class="vk-send">▷</button></form>
     </div>
-    <aside class="conversation-instructions">Здесь тебе предстоит распределить тренеров по ДГ/ОГ/ТГ.<br><br>Сначала выбирай БГ, а затем МГ.<br><br>Помни: сильный к сильному, слабый к слабому.</aside>
+    <aside class="conversation-instructions">Здесь тебе предстоит распределить тренеров.<br><br>Сначала выбирай БГ, а затем МГ.<br><br>Помни: сильный к сильному, слабый к слабому.</aside>
   </section>
   <div class="game-view locked" id="gameView" hidden inert>
     <div class="game-lock">🔒 Сначала составь все пары во вкладке «Беседа»</div>
@@ -468,8 +484,9 @@
         addMsg(t.name, t.val, time, t.name[0].toLowerCase(), 'pick');
       });
 
+      const withBu = n => { const t = trainers.find(x => x.name === n); return t ? n + ' ' + t.val : n; };
       function render() {
-        text.value = picked.map((n, i) => (i === 0 ? 'БГ - ' : 'МГ - ') + n).join('\n');
+        text.value = picked.map((n, i) => (i === 0 ? 'БГ - ' : 'МГ - ') + withBu(n)).join('\n');
         list.querySelectorAll('.vk-message.pick').forEach(el => el.classList.toggle('sel', picked.includes(el.dataset.name)));
       }
       list.addEventListener('click', e => {
@@ -795,6 +812,7 @@
           online: true,
           get: () => ref.once('value').then(s => s.val()),
           set: (path, val) => ref.child(path).set(val),
+          update: obj => ref.update(obj),
           push: (path, val) => ref.child(path).push(val),
           claim: (role, data) => ref.child('roles/' + role)
             .transaction(cur => (!cur || cur.uid === data.uid) ? data : undefined)
@@ -815,6 +833,7 @@
         online: false,
         get: async () => read(),
         set: async (path, val) => { const o = read() || {}; setPath(o, path, val); write(o); },
+        update: async obj => { const o = read() || {}; Object.keys(obj).forEach(p => setPath(o, p, obj[p])); write(o); },
         push: async (path, val) => { const o = read() || {}; setPath(o, path + '/' + newId(), val); write(o); },
         claim: async (role, data) => {
           const o = read() || {}; const cur = getPath(o, 'roles/' + role);
@@ -1068,11 +1087,12 @@
       const gameTrainees = () => [...new Set(kMsgs(S.game).map(id => S.game[id].name))];
       const openTrainees = () => [...new Set(kMsgs(S.game).filter(id => !isDoneMsg(id)).map(id => S.game[id].name))];
 
-      // ИСник: выбор БГ/МГ в беседе
+      // ИСник: выбор БГ/МГ в беседе (запоминаем сами сообщения, в поле — имя и БУ)
       let picked = [];
+      const pickLabel = id => { const m = S.convo && S.convo[id]; return m ? m.name + ' ' + m.text : ''; };
       function renderPick() {
-        vkText.value = picked.map((n, i) => (i === 0 ? 'БГ - ' : 'МГ - ') + n).join('\n');
-        vkList.querySelectorAll('.vk-message.pick').forEach(x => x.classList.toggle('sel', picked.includes(x.dataset.name)));
+        vkText.value = picked.map((id, i) => (i === 0 ? 'БГ - ' : 'МГ - ') + pickLabel(id)).join('\n');
+        vkList.querySelectorAll('.vk-message.pick').forEach(x => x.classList.toggle('sel', picked.includes(x.dataset.id)));
       }
       if (I) {
         el('vkClear').addEventListener('click', () => { picked = []; renderPick(); });
@@ -1100,16 +1120,20 @@
         gForm.addEventListener('submit', e => { e.preventDefault(); const v = gInput.value.trim(); if (!v) return; sys('game', v); gInput.value = ''; });
       }
       vkList.addEventListener('click', e => {
+        const d = e.target.closest('[data-del]');
+        if (d && K) { deleteMsg('convo', d.closest('.vk-message').dataset.id); return; }
         const j = e.target.closest('[data-judge]');
         if (j && K) { judgeConvo(j.closest('.vk-message').dataset.id, j.dataset.judge); return; }
         if (!I) return;
         const m = e.target.closest('.vk-message.pick');
         if (!m || m.classList.contains('paired')) return;
-        const n = m.dataset.name;
-        picked = picked.includes(n) ? picked.filter(x => x !== n) : picked.concat(n);
+        const id = m.dataset.id;
+        picked = picked.includes(id) ? picked.filter(x => x !== id) : picked.concat(id);
         renderPick(); vkText.focus();
       });
       gList.addEventListener('click', e => {
+        const d = e.target.closest('[data-del]');
+        if (d && K) { deleteMsg('game', d.closest('.cw-row').dataset.id); return; }
         const j = e.target.closest('[data-judge]');
         if (j && K) { judgeGame(j.closest('.cw-row').dataset.id, j.dataset.judge); return; }
         if (!I) return;
@@ -1131,16 +1155,36 @@
         const found = openTrainers().filter(n => low.includes(norm(n)))
           .sort((a, b) => low.indexOf(norm(a)) - low.indexOf(norm(b)));
         if (found.length !== 2) return;
-        room.push('pairs', found);
-        kMsgs(S.convo).forEach(mid => { if (found.includes(S.convo[mid].name) && !isPairedMsg(mid)) room.set('pairedIds/' + mid, true); });
+        const upd = {['pairs/' + id]: found};
+        kMsgs(S.convo).forEach(mid => { if (found.includes(S.convo[mid].name) && !isPairedMsg(mid)) upd['pairedIds/' + mid] = id; });
+        room.update(upd);
       }
       function judgeGame(id, v) {
         const m = S.game && S.game[id]; if (!m || m.st) return;
         room.set('game/' + id + '/st', v);
         if (v !== 'ok') return;
         const names = leadNames(m.text, openTrainees()).names;
-        kMsgs(S.game).forEach(mid => { if (names.includes(S.game[mid].name) && !isDoneMsg(mid)) room.set('doneIds/' + mid, true); });
+        const upd = {};
+        kMsgs(S.game).forEach(mid => { if (names.includes(S.game[mid].name) && !isDoneMsg(mid)) upd['doneIds/' + mid] = id; });
+        if (Object.keys(upd).length) room.update(upd);
       }
+
+      // куратор удаляет любое сообщение; вместе с ним снимается то, что из него получилось
+      function deleteMsg(where, id) {
+        const data = where === 'convo' ? S.convo : S.game;
+        if (!data || !data[id]) return;
+        const upd = {[where + '/' + id]: null};
+        if (where === 'convo') {
+          upd['pairedIds/' + id] = null;                       // удалили сообщение тренера
+          if (S.pairs && S.pairs[id]) upd['pairs/' + id] = null; // удалили одобренный ответ ИСника — пара распадается
+          Object.keys(S.pairedIds || {}).forEach(mid => { if (S.pairedIds[mid] === id) upd['pairedIds/' + mid] = null; });
+        } else {
+          upd['doneIds/' + id] = null;
+          Object.keys(S.doneIds || {}).forEach(mid => { if (S.doneIds[mid] === id) upd['doneIds/' + mid] = null; });
+        }
+        room.update(upd);
+      }
+      const delBtn = () => { const b = mk('button', 'k-del', '🗑'); b.type = 'button'; b.title = 'Удалить сообщение'; b.dataset.del = '1'; return b; };
 
       function judgeBox() {
         const box = mk('span', 'k-judge');
@@ -1155,6 +1199,7 @@
           if (!x) { x = build(id, data[id]); x.dataset.id = id; map.set(id, x); container.appendChild(x); added = true; }
           update(x, data[id]);
         });
+        map.forEach((x, id) => { if (!data || !data[id]) { x.remove(); map.delete(id); } });
         if (added) container.scrollTop = container.scrollHeight;
       }
       const convoEls = new Map(), gameEls = new Map();
@@ -1170,6 +1215,7 @@
           const mark = mk('span', 'k-mark'); x.querySelector('.vk-message-name').appendChild(mark);
           if (K) x.children[1].appendChild(judgeBox());
         }
+        if (K) x.children[2].appendChild(delBtn());
         return x;
       }
       function updVk(x, m) {
@@ -1185,6 +1231,7 @@
         if (m.who === 'k') row.appendChild(mk('span', 'cw-a', '→'));
         else if (m.who === 's') {}
         else { row.appendChild(mk('span', 'cw-a k-mark')); if (K) row.querySelector('.cw-a').appendChild(judgeBox()); }
+        if (K) row.appendChild(delBtn());
         return row;
       }
       function updRow(row, m) {
@@ -1220,6 +1267,29 @@
         try { history.replaceState(null, '', location.pathname); } catch (e) {}
         location.reload();
       });
+      // «Перезапустить»: та же сессия начинается с чистого листа, у всех открывается выбор роли
+      const restartBtn = el('kRestart'); restartBtn.hidden = false;
+      let rArmed = null;
+      restartBtn.addEventListener('click', () => {
+        if (closing) return;
+        if (!rArmed) {
+          restartBtn.textContent = 'Точно? Нажми ещё раз'; restartBtn.classList.add('armed');
+          rArmed = setTimeout(() => { rArmed = null; restartBtn.textContent = 'Перезапустить'; restartBtn.classList.remove('armed'); }, 3000);
+          return;
+        }
+        clearTimeout(rArmed); restartBtn.disabled = true;
+        room.update({gen: (S.gen || 0) + 1, phase: 'convo', convo: null, game: null, pairs: null, pairedIds: null,
+                     doneIds: null, cats: null, kpos: null, say: null, roles: null})
+          .then(() => restarted(), () => restarted());
+      });
+      function restarted() {
+        if (closing) return; closing = true;
+        ss.set('kSession', null); ss.set('kPending', null);
+        try { history.replaceState(null, '', location.pathname + '?s=' + code); } catch (e) {}
+        location.reload(); // после загрузки откроется выбор роли в этой же сессии
+      }
+      let myGen = null;
+
       function sessionClosed() {
         if (closing) return; closing = true;
         ss.set('kSession', null);
@@ -1231,6 +1301,9 @@
         S = st || {};
         if (S.meta) hadMeta = true;
         else { if (hadMeta || !firstPaint) sessionClosed(); return; }
+        // кто-то нажал «Перезапустить»
+        if (myGen === null) myGen = S.gen || 0;
+        else if ((S.gen || 0) !== myGen) { restarted(); return; }
         // моя роль на месте? (после обрыва связи — занимаем снова)
         const me = getPath(S, 'roles/' + role);
         if (!me || me.uid !== myUid) { if (!me) room.claim(role, {name: player.name, uid: myUid}); }
@@ -1245,7 +1318,8 @@
 
         // беседа
         sync(vkList, S.convo, convoEls, buildVk, updVk);
-        picked = picked.filter(n => openTrainers().includes(n));
+        picked = picked.filter(id => S.convo && S.convo[id] && !isPairedMsg(id));
+        if (I) vkList.querySelectorAll('.vk-message.pick').forEach(x => x.classList.toggle('sel', picked.includes(x.dataset.id)));
         if (K) {
           // списки имён: можно писать от одного и того же сколько угодно раз
           if (!tSel.options.length) {
